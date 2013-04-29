@@ -10,9 +10,9 @@ def test_server(xprocess):
     import socket
     sock = socket.socket()
     sock.connect(("localhost", 5777))
-    sock.sendall("hello\n")
+    sock.sendall("hello\n".encode("utf8"))
     c = sock.recv(1)
-    assert c == "1"
+    assert c == "1".encode("utf8")
 
 def test_server2(xprocess):
     xprocess.ensure("server2", lambda cwd:
@@ -20,6 +20,6 @@ def test_server2(xprocess):
     import socket
     sock = socket.socket()
     sock.connect(("localhost", 5778))
-    sock.sendall("world\n")
+    sock.sendall("world\n".encode("utf8"))
     c = sock.recv(1)
-    assert c == "1"
+    assert c == "1".encode("utf8")

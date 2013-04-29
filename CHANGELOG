@@ -1,3 +1,10 @@
+0.8  (dev)
+-----------
+
+- support python3 (tested on linux)
+
+- split out pytest independent process support into xprocess.py
+
 0.7 
 -----------
 

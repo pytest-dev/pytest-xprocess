@@ -1,9 +1,13 @@
 
-import SocketServer
+try:
+    import SocketServer as socketserver
+except ImportError:
+    import socketserver
+
 import sys
 
 
-class MainHandler(SocketServer.StreamRequestHandler):
+class MainHandler(socketserver.StreamRequestHandler):
     count = 0
     def handle(self):
         while 1:
@@ -12,11 +16,11 @@ class MainHandler(SocketServer.StreamRequestHandler):
                 break
             sys.stderr.write("[%d] %r\n" %(self.count, line))
             sys.stderr.flush()
-            self.request.sendall("1")
+            self.request.sendall("1".encode("utf8"))
             MainHandler.count += 1
 
 if __name__ == "__main__":
-    class MyServer(SocketServer.TCPServer):
+    class MyServer(socketserver.TCPServer):
         allow_reuse_address = True
     mainserver = MyServer(("localhost", int(sys.argv[1])), MainHandler)
     sys.stderr.write("started\n")

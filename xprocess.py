@@ -75,9 +75,18 @@ class XProcessInfo:
 
 
 class XProcess:
-    def __init__(self, config, rootdir):
+    def __init__(self, config, rootdir, log=None):
         self.config = config
         self.rootdir = rootdir
+        if log is None:
+            class Log:
+                def debug(self, msg, *args):
+                    if args:
+                        print (msg % args)
+                    else:
+                        print (args)
+            log = Log()
+        self.log = log
 
     def getinfo(self, name):
         """ return Process Info for the given external process. """
@@ -119,8 +128,8 @@ class XProcess:
             controldir.ensure(dir=1)
             wait, args = preparefunc(controldir)
             args = [str(x) for x in args]
-            print ("%s$ %s" % (controldir, " ".join(args)))
-            stdout = open(str(info.logpath), "w", 0)
+            self.log.debug("%s$ %s", controldir, " ".join(args))
+            stdout = open(str(info.logpath), "wb", 0)
             kwargs = {}
             if sys.platform == "win32":
                 kwargs["creationflags"] = 0x08
@@ -130,6 +139,7 @@ class XProcess:
                           stdout=stdout, stderr=STDOUT,
                           **kwargs)
             pid = popen.pid
+            self.log.debug("process %r started pid=%s", name, pid)
             info.pidpath.write(str(pid))
             stdout.close()
         f = info.logpath.open()
@@ -142,7 +152,8 @@ class XProcess:
                     import time
                     time.sleep(0.1)
                 if std.re.search(wait, line):
-                   break
+                    self.log.debug("%s process startup pattern detected", name)
+                    break
 
         logfiles = getattr(self.config, "_extlogfiles", {})
         logfiles[name] = f
