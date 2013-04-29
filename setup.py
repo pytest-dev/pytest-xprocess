@@ -10,7 +10,7 @@ if __name__ == "__main__":
         author='Holger Krekel',
         author_email='holger@merlinux.eu',
         url='http://bitbucket.org/hpk42/pytest-xprocess/',
-        py_modules=['pytest_xprocess'],
+        py_modules=['pytest_xprocess', 'xprocess'],
         entry_points={'pytest11': ['xprocess = pytest_xprocess']},
         install_requires=['pytest-cache', 'pytest>=2.3.4'],
     )
