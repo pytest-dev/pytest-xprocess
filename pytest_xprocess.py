@@ -8,7 +8,6 @@ import py
 import sys
 import os
 
-from pytest_cache import getrootdir
 
 print_ = py.builtin.print_
 std = py.std
@@ -21,13 +20,18 @@ def pytest_addoption(parser):
     group.addoption('--xshow', action="store_true",
         help="show status of external process")
 
+def getrootdir(config):
+    from pytest_cache import getrootdir
+    return getrootdir(config, ".xprocess").ensure(dir=1)
+
 def pytest_cmdline_main(config):
     xkill = config.option.xkill
     xshow = config.option.xshow
     if xkill or xshow:
         config.pluginmanager.do_configure(config)
         tw = py.io.TerminalWriter()
-        xprocess = XProcess(config)
+        rootdir = getrootdir(config)
+        xprocess = XProcess(config, rootdir)
         return do_killxshow(xprocess, tw, xkill)
 
 def do_xkill(info, tw):
@@ -101,10 +105,9 @@ class XProcessInfo:
 
 
 class XProcess:
-    def __init__(self, config):
+    def __init__(self, config, rootdir):
         self.config = config
-        self.rootdir = getrootdir(self.config, ".xprocess")
-        self.rootdir.ensure(dir=1)
+        self.rootdir = rootdir
 
     def getinfo(self, name):
         """ return Process Info for the given external process. """
@@ -120,8 +123,8 @@ class XProcess:
         @param preparefunc:
                 called with a fresh empty CWD for the new process,
                 must return (waitpattern, args) tuple where
-                ``args`` are used to start the subprocess and ``waitpattern``
-                must be found
+                ``args`` are used to start the subprocess and the
+                the regular expression ``waitpattern`` must be found
 
         @param restart: force restarting the process if it is running.
 
@@ -180,7 +183,8 @@ def xprocess(request):
     """ Return session-scoped XProcess helper to manage long-running
     processes required for testing.
     """
-    return XProcess(request.config)
+    rootdir = getrootdir(request.config)
+    return XProcess(request.config, rootdir)
 
 def pytest_runtest_makereport(__multicall__, item, call):
     logfiles = getattr(item.config, "_extlogfiles", None)
