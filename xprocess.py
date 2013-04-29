@@ -139,9 +139,9 @@ class XProcess:
             popen = Popen(args, cwd=str(controldir),
                           stdout=stdout, stderr=STDOUT,
                           **kwargs)
-            pid = popen.pid
-            self.log.debug("process %r started pid=%s", name, pid)
+            info.pid = pid = popen.pid
             info.pidpath.write(str(pid))
+            self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
         f = info.logpath.open()
         if not restart:
