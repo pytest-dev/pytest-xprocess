@@ -147,17 +147,22 @@ class XProcess:
         if not restart:
             f.seek(0, 2)
         else:
+            count = 50
             while 1:
                 line = f.readline()
+                self.log.debug(line)
                 if not line:
                     import time
                     time.sleep(0.1)
                 if std.re.search(wait, line):
                     self.log.debug("%s process startup pattern detected", name)
                     break
+                count -= 1
+                if count < 0:
+                    raise RuntimeError("Could not start process %s" % name)
 
-        logfiles = getattr(self.config, "_extlogfiles", {})
+
+        logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         logfiles[name] = f
-        self.config._extlogfiles = logfiles
         return info.pid, f
 
