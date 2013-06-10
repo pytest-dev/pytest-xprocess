@@ -20,11 +20,11 @@ def do_xkill(info, tw):
                 return 1
             else:
                 tw.line("TERMINATED %s -- logfile %s" % (msg, info.logpath))
-                info.pidpath.dirpath().remove(ignore_errors=True)
+                #info.pidpath.dirpath().remove(ignore_errors=True)
                 return 0
-    else:
-        tw.line("no running %r process, pruning" % info.name, red=True)
-        info.pidpath.dirpath().remove()
+    #else:
+    #    #tw.line("no running %r process, pruning" % info.name, red=True)
+    #    #info.pidpath.dirpath().remove()
     return 1
 
 def do_killxshow(xprocess, tw, xkill):
