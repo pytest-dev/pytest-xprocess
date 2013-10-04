@@ -4,35 +4,38 @@ import os
 import py
 std = py.std
 
-def do_xkill(info, tw):
-    if info.pid and info.isrunning():
-        msg = "%r, pid %d" % (info.name, info.pid)
-        if sys.platform == "win32":
-            py.std.subprocess.check_call("taskkill /F /PID %s" % info.pid)
-            tw.line("TERMINATED %s -- logfile %s" % (msg, info.logpath))
-            #info.pidpath.dirpath().remove(ignore_error=True)
-            return 0
+def do_xkill(info):
+    # return codes:
+    # 0   no work to do
+    # 1   killed
+    # -1  failed to kill
+    if not info.pid or not info.isrunning():
+        return 0
+
+    if sys.platform == "win32":
+        std.subprocess.check_call("taskkill /F /PID %s" % info.pid)
+        return 1
+    else:
+        try:
+            os.kill(info.pid, 9)
+        except OSError:
+            return -1
         else:
-            try:
-                os.kill(info.pid, 9)
-            except OSError:
-                tw.line("FAILED killing %s" % msg, red=True)
-                return 1
-            else:
-                tw.line("TERMINATED %s -- logfile %s" % (msg, info.logpath))
-                #info.pidpath.dirpath().remove(ignore_errors=True)
-                return 0
-    #else:
-    #    #tw.line("no running %r process, pruning" % info.name, red=True)
-    #    #info.pidpath.dirpath().remove()
-    return 1
+            return 1
 
 def do_killxshow(xprocess, tw, xkill):
     ret = 0
     for p in xprocess.rootdir.listdir():
         info = xprocess.getinfo(p.basename)
         if xkill:
-            ret = do_xkill(info, tw) or ret
+            killret = do_xkill(info)
+            ret = ret or (killret==1)
+            if killret == 1:
+                tw.line("%s %s TERMINATED" % (info.pid, info.name))
+            elif killret == -1:
+                tw.line("%s %s FAILED TO KILL" % (info.pid, info.name))
+            elif killret == 0:
+                tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
         else:
             running = info.isrunning() and "LIVE" or "DEAD"
             tw.line("%s %s %s %s" %(info.pid, info.name, running,
@@ -49,6 +52,9 @@ class XProcessInfo:
             self.pid = int(self.pidpath.read())
         else:
             self.pid = None
+
+    def kill(self):
+        return do_xkill(self)
 
     def _isrunning_win32(self, pid):
         import ctypes, ctypes.wintypes
@@ -118,21 +124,19 @@ class XProcess:
 
         if restart:
             if info.pid is not None:
-                try:
-                    py.process.kill(info.pid)
-                except OSError:
-                    pass
-                # wait?
-            controldir = info.controldir
+                info.kill()
+            controldir = info.controldir.ensure(dir=1)
             #controldir.remove()
-            controldir.ensure(dir=1)
             wait, args = preparefunc(controldir)
             args = [str(x) for x in args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
             kwargs = {}
             if sys.platform == "win32":
-                kwargs["creationflags"] = 0x08
+                kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
+                if sys.version_info >= (2,7):
+                    sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
+                    sinfo.wShowWindow |= std.subprocess.SW_HIDE
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
@@ -147,22 +151,28 @@ class XProcess:
         if not restart:
             f.seek(0, 2)
         else:
-            count = 50
-            while 1:
-                line = f.readline()
-                self.log.debug(line)
-                if not line:
-                    import time
-                    time.sleep(0.1)
-                if std.re.search(wait, line):
-                    self.log.debug("%s process startup pattern detected", name)
-                    break
-                count -= 1
-                if count < 0:
-                    raise RuntimeError("Could not start process %s" % name)
-
-
+            if not callable(wait):
+                check = lambda: self._checkpattern(f, wait)
+            else:
+                check = wait
+            if check():
+                self.log.debug("%s process startup detected", name)
+            else:
+                raise RuntimeError("Could not start process %s" % name)
         logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         logfiles[name] = f
-        return info.pid, f
+        newinfo = self.getinfo(name)
+        return info.pid, info.logpath
+
+    def _checkpattern(self, f, pattern, count=50):
+        while 1:
+            line = f.readline()
+            if not line:
+                std.time.sleep(0.1)
+            self.log.debug(line)
+            if std.re.search(pattern, line):
+                return True
+            count -= 1
+            if count < 0:
+                return False
 

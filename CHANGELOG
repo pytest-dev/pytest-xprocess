@@ -1,9 +1,15 @@
-0.8  (dev)
+0.8
 -----------
 
-- support python3 (tested on linux)
+- support python3 (tested on linux/win32)
 
 - split out pytest independent process support into xprocess.py
+
+- add info.kill() method and some smaller refactoring
+
+- fix various windows related Popen / killing details
+
+- add tests
 
 0.7 
 -----------
