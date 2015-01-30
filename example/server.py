@@ -1,4 +1,4 @@
-
+import os
 try:
     import SocketServer as socketserver
 except ImportError:
@@ -7,16 +7,20 @@ except ImportError:
 import sys
 
 
+response = os.environ.get('RESPONSE', "1").encode('utf8')
+
+
 class MainHandler(socketserver.StreamRequestHandler):
     count = 0
+
     def handle(self):
         while 1:
             line = self.rfile.readline()
             if not line:
                 break
-            sys.stderr.write("[%d] %r\n" %(self.count, line))
+            sys.stderr.write("[%d] %r\n" % (self.count, line))
             sys.stderr.flush()
-            self.request.sendall("1".encode("utf8"))
+            self.request.sendall(response)
             MainHandler.count += 1
 
 if __name__ == "__main__":

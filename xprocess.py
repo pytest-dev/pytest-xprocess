@@ -127,11 +127,16 @@ class XProcess:
                 info.kill()
             controldir = info.controldir.ensure(dir=1)
             #controldir.remove()
-            wait, args = preparefunc(controldir)
+            preparedata = preparefunc(controldir)
+            if len(preparedata) == 2:
+                wait, args = preparedata
+                env = None
+            else:
+                wait, args, env = preparedata
             args = [str(x) for x in args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
-            kwargs = {}
+            kwargs = {'env': env}
             if sys.platform == "win32":
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
                 if sys.version_info >= (2,7):

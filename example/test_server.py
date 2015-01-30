@@ -26,7 +26,20 @@ def test_server2(xprocess):
     c = sock.recv(1)
     assert c == "1".encode("utf8")
 
+def test_server_env(xprocess):
+    """Can return env as third item from preparefunc."""
+    env = {'RESPONSE': 'X'}
+    xprocess.ensure("server3", lambda cwd:
+                    ("started", [sys.executable, server_path, 5779], env))
+    import socket
+    sock = socket.socket()
+    sock.connect(("localhost", 5779))
+    sock.sendall("hello\n".encode("utf8"))
+    c = sock.recv(1)
+    assert c == "X".encode("utf8")
+
 def test_shutdown(xprocess):
+    xprocess.getinfo("server3").kill()
     xprocess.getinfo("server2").kill()
     xprocess.getinfo("server").kill()
 
