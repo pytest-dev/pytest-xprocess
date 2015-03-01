@@ -1,5 +1,10 @@
+.. image:: https://drone.io/bitbucket.org/pytest-dev/pytest-xprocess/status.png
+   :target: https://drone.io/bitbucket.org/pytest-dev/pytest-xprocess/latest
+.. image:: https://pypip.in/v/pytest-xprocess/badge.png
+   :target: https://pypi.python.org/pypi/pytest-xprocess
+
 experimental py.test plugin for managing processes across test runs
-========================================================================
+====================================================
 
 Usage
 ---------
