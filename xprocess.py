@@ -90,7 +90,7 @@ class XProcess:
                     if args:
                         print (msg % args)
                     else:
-                        print (args)
+                        print (msg)
             log = Log()
         self.log = log
 
