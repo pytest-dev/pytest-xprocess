@@ -1,3 +1,11 @@
+0.9
+-----------
+
+- fix issue Log calls without parameters now print the correct message
+  instead of an empty tuple. See
+  https://bitbucket.org/pytest-dev/pytest-xprocess/pull-request/3 for more
+  info. Thanks user cr3 for report and Bruno Oliveira for the PR.
+
 0.8
 -----------
 
