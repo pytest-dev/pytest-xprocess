@@ -54,28 +54,14 @@ class XProcessInfo:
     def kill(self):
         return do_xkill(self)
 
-    def _isrunning_win32(self, pid):
-        import ctypes, ctypes.wintypes
-        kernel32 = ctypes.windll.kernel32
-        handle = kernel32.OpenProcess(1, 0, pid)
-        if handle == 0:
-            return False
-        exit_code = ctypes.wintypes.DWORD()
-        is_running = (kernel32.GetExitCodeProcess(handle,
-                        ctypes.byref(exit_code)) == 0)
-        kernel32.CloseHandle(handle)
-        return is_running or exit_code.value == 259
-
     def isrunning(self):
-        if self.pid is not None:
-            if sys.platform == "win32":
-                return self._isrunning_win32(self.pid)
-            try:
-                os.kill(self.pid, 0)
-                return True
-            except OSError:
-                pass
-        return False
+        if self.pid is None:
+            return False
+        try:
+            proc = psutil.Process(self.pid)
+        except psutil.NoSuchProcess:
+            return False
+        return proc.is_running()
 
 
 class XProcess:
