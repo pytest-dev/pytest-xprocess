@@ -6,6 +6,8 @@
   https://bitbucket.org/pytest-dev/pytest-xprocess/pull-request/3 for more
   info. Thanks user cr3 for report and Bruno Oliveira for the PR.
 
+- use 3rd party "psutil" for process handling
+
 0.8
 -----------
 

@@ -29,7 +29,7 @@ def pytest_cmdline_main(config):
     xkill = config.option.xkill
     xshow = config.option.xshow
     if xkill or xshow:
-        config.pluginmanager.do_configure(config)
+        #config._do_configure()
         tw = py.io.TerminalWriter()
         rootdir = getrootdir(config)
         xprocess = XProcess(config, rootdir)

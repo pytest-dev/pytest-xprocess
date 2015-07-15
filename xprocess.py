@@ -2,6 +2,8 @@
 import sys
 import os
 import py
+import psutil
+
 std = py.std
 
 def do_xkill(info):
@@ -12,16 +14,12 @@ def do_xkill(info):
     if not info.pid or not info.isrunning():
         return 0
 
-    if sys.platform == "win32":
-        std.subprocess.check_call("taskkill /F /PID %s" % info.pid)
-        return 1
+    try:
+        psutil.Process(info.pid).kill()
+    except psutil.Error:
+        return -1
     else:
-        try:
-            os.kill(info.pid, 9)
-        except OSError:
-            return -1
-        else:
-            return 1
+        return 1
 
 def do_killxshow(xprocess, tw, xkill):
     ret = 0

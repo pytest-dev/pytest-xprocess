@@ -1,5 +1,6 @@
-
-import sys, subprocess
+import os
+import sys
+import subprocess
 import py
 
 server_path = py.path.local(__file__).dirpath("server.py")
@@ -8,32 +9,33 @@ pytest_plugins = "pytester"
 
 def test_server(xprocess):
     xprocess.ensure("server", lambda cwd:
-        ("started", [sys.executable, server_path, 5777]))
+        ("started", [sys.executable, server_path, 6777]))
     import socket
     sock = socket.socket()
-    sock.connect(("localhost", 5777))
+    sock.connect(("localhost", 6777))
     sock.sendall("hello\n".encode("utf8"))
     c = sock.recv(1)
     assert c == "1".encode("utf8")
 
 def test_server2(xprocess):
     xprocess.ensure("server2", lambda cwd:
-        ("started", [sys.executable, server_path, 5778]))
+        ("started", [sys.executable, server_path, 6778]))
     import socket
     sock = socket.socket()
-    sock.connect(("localhost", 5778))
+    sock.connect(("localhost", 6778))
     sock.sendall("world\n".encode("utf8"))
     c = sock.recv(1)
     assert c == "1".encode("utf8")
 
 def test_server_env(xprocess):
     """Can return env as third item from preparefunc."""
-    env = {'RESPONSE': 'X'}
+    env = os.environ.copy()
+    env['RESPONSE'] = 'X'
     xprocess.ensure("server3", lambda cwd:
-                    ("started", [sys.executable, server_path, 5779], env))
+                    ("started", [sys.executable, server_path, 6779], env))
     import socket
     sock = socket.socket()
-    sock.connect(("localhost", 5779))
+    sock.connect(("localhost", 6779))
     sock.sendall("hello\n".encode("utf8"))
     c = sock.recv(1)
     assert c == "X".encode("utf8")
@@ -48,10 +50,10 @@ def test_functional_work_flow(testdir):
         import sys
         def test_server(request, xprocess):
             xprocess.ensure("server", lambda cwd:
-                ("started", [sys.executable, %r, 5700]))
+                ("started", [sys.executable, %r, 6700]))
             import socket
             sock = socket.socket()
-            sock.connect(("localhost", 5700))
+            sock.connect(("localhost", 6700))
             sock.sendall("world\\n".encode("utf8"))
             c = sock.recv(1)
             assert c == "1".encode("utf8")
