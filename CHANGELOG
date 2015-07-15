@@ -1,3 +1,8 @@
+0.9.1
+-----------
+
+- don't use __multicall__ in pytest hook
+
 0.9
 -----------
 

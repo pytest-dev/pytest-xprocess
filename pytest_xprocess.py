@@ -43,16 +43,16 @@ def xprocess(request):
     rootdir = getrootdir(request.config)
     return XProcess(request.config, rootdir)
 
-def pytest_runtest_makereport(__multicall__, item, call):
+@pytest.mark.hookwrapper
+def pytest_runtest_makereport(item, call):
     logfiles = getattr(item.config, "_extlogfiles", None)
+    report = yield
     if logfiles is None:
         return
-    report = __multicall__.execute()
     for name in sorted(logfiles):
         content = logfiles[name].read()
         if content:
             longrepr = getattr(report, "longrepr", None)
             if hasattr(longrepr, "addsection"):
                 longrepr.addsection("%s log" %name, content)
-    return report
 
