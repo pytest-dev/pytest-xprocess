@@ -70,6 +70,4 @@ which contains a ``pytest.ini`` or ``setup.py`` file.
 Notes
 -------------
 
-The repository of this plugin is at http://bitbucket.org/pytest-dev/pytest-xprocess
-
 For more info on py.test see http://pytest.org
