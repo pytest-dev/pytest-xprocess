@@ -1,3 +1,9 @@
+0.10
+-----------
+
+- Project `now hosted on Github
+  <https://github.com/pytest-dev/pytest-xprocess/>`_.
+
 0.9.1
 -----------
 
@@ -26,7 +32,7 @@
 
 - add tests
 
-0.7 
+0.7
 -----------
 
 - initial release
