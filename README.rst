@@ -1,8 +1,8 @@
 .. image:: https://pypip.in/v/pytest-xprocess/badge.png
    :target: https://pypi.python.org/pypi/pytest-xprocess
 
-experimental py.test plugin for managing processes across test runs
-===================================================================
+Experimental `py.test <https://pytest.org>`_ plugin for managing processes
+across test runs.
 
 Usage
 ---------
@@ -65,9 +65,3 @@ omit it and return just ``(PATTERN, args)`` from the ``preparefunc``.
 Note that the plugin needs to persist the process ID and logfile
 information.  It does this in a sub directory of the directory
 which contains a ``pytest.ini`` or ``setup.py`` file.
-
-
-Notes
--------------
-
-For more info on py.test see http://pytest.org
