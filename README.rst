@@ -4,7 +4,7 @@
    :target: https://pypi.python.org/pypi/pytest-xprocess
 
 experimental py.test plugin for managing processes across test runs
-====================================================
+===================================================================
 
 Usage
 ---------
