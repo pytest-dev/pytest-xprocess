@@ -1,6 +1,3 @@
-.. image:: https://pypip.in/v/pytest-xprocess/badge.png
-   :target: https://pypi.python.org/pypi/pytest-xprocess
-
 Experimental `py.test <https://pytest.org>`_ plugin for managing processes
 across test runs.
 
