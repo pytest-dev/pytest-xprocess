@@ -1,6 +1,5 @@
 import os
 import sys
-import subprocess
 import py
 
 server_path = py.path.local(__file__).dirpath("server.py")
