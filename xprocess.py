@@ -6,27 +6,13 @@ import psutil
 
 std = py.std
 
-def do_xkill(info):
-    # return codes:
-    # 0   no work to do
-    # 1   killed
-    # -1  failed to kill
-    if not info.pid or not info.isrunning():
-        return 0
-
-    try:
-        psutil.Process(info.pid).kill()
-    except psutil.Error:
-        return -1
-    else:
-        return 1
 
 def do_killxshow(xprocess, tw, xkill):
     ret = 0
     for p in xprocess.rootdir.listdir():
         info = xprocess.getinfo(p.basename)
         if xkill:
-            killret = do_xkill(info)
+            killret = info.kill()
             ret = ret or (killret==1)
             if killret == 1:
                 tw.line("%s %s TERMINATED" % (info.pid, info.name))
@@ -52,7 +38,19 @@ class XProcessInfo:
             self.pid = None
 
     def kill(self):
-        return do_xkill(self)
+        # return codes:
+        # 0   no work to do
+        # 1   killed
+        # -1  failed to kill
+        if not self.pid or not self.isrunning():
+            return 0
+
+        try:
+            psutil.Process(self.pid).kill()
+        except psutil.Error:
+            return -1
+        else:
+            return 1
 
     def isrunning(self):
         if self.pid is None:
