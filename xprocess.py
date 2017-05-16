@@ -6,25 +6,6 @@ from py import std
 import psutil
 
 
-def do_killxshow(xprocess, tw, xkill):
-    ret = 0
-    for p in xprocess.rootdir.listdir():
-        info = xprocess.getinfo(p.basename)
-        if xkill:
-            killret = info.kill()
-            ret = ret or (killret==1)
-            if killret == 1:
-                tw.line("%s %s TERMINATED" % (info.pid, info.name))
-            elif killret == -1:
-                tw.line("%s %s FAILED TO KILL" % (info.pid, info.name))
-            elif killret == 0:
-                tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
-        else:
-            running = info.isrunning() and "LIVE" or "DEAD"
-            tw.line("%s %s %s %s" %(info.pid, info.name, running,
-                                        info.logpath,))
-    return ret
-
 class XProcessInfo:
     def __init__(self, path, name):
         self.name = name
@@ -162,3 +143,21 @@ class XProcess:
             if count < 0:
                 return False
 
+    def _killxshow(self, tw, xkill):
+        ret = 0
+        for p in self.rootdir.listdir():
+            info = self.getinfo(p.basename)
+            if xkill:
+                killret = info.kill()
+                ret = ret or (killret==1)
+                if killret == 1:
+                    tw.line("%s %s TERMINATED" % (info.pid, info.name))
+                elif killret == -1:
+                    tw.line("%s %s FAILED TO KILL" % (info.pid, info.name))
+                elif killret == 0:
+                    tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
+            else:
+                running = info.isrunning() and "LIVE" or "DEAD"
+                tw.line("%s %s %s %s" %(info.pid, info.name, running,
+                                            info.logpath,))
+        return ret

@@ -9,7 +9,7 @@ import sys
 import os
 
 
-from xprocess import XProcess, do_killxshow
+from xprocess import XProcess
 print_ = py.builtin.print_
 std = py.std
 
@@ -33,7 +33,7 @@ def pytest_cmdline_main(config):
         tw = py.io.TerminalWriter()
         rootdir = getrootdir(config)
         xprocess = XProcess(config, rootdir)
-        return do_killxshow(xprocess, tw, xkill)
+        return xprocess._killxshow(tw, xkill)
 
 @pytest.fixture(scope="session")
 def xprocess(request):
