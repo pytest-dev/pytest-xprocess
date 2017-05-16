@@ -147,7 +147,7 @@ class XProcess:
                 raise RuntimeError("Could not start process %s" % name)
         logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         logfiles[name] = f
-        newinfo = self.getinfo(name)
+        self.getinfo(name)
         return info.pid, info.logpath
 
     def _checkpattern(self, f, pattern, count=50):
