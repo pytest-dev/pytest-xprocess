@@ -1,6 +1,3 @@
-
-# content of conftest.py
-
 import pytest
 import py
 
@@ -19,9 +16,11 @@ def pytest_addoption(parser):
     group.addoption('--xshow', action="store_true",
         help="show status of external process")
 
+
 def getrootdir(config):
     from pytest_cache import getrootdir
     return getrootdir(config, ".xprocess").ensure(dir=1)
+
 
 def pytest_cmdline_main(config):
     xkill = config.option.xkill
@@ -36,6 +35,7 @@ def pytest_cmdline_main(config):
     if xshow:
         return xprocess._xshow(tw)
 
+
 @pytest.fixture(scope="session")
 def xprocess(request):
     """ Return session-scoped XProcess helper to manage long-running
@@ -43,6 +43,7 @@ def xprocess(request):
     """
     rootdir = getrootdir(request.config)
     return XProcess(request.config, rootdir)
+
 
 @pytest.mark.hookwrapper
 def pytest_runtest_makereport(item, call):
@@ -56,4 +57,3 @@ def pytest_runtest_makereport(item, call):
             longrepr = getattr(report, "longrepr", None)
             if hasattr(longrepr, "addsection"):
                 longrepr.addsection("%s log" %name, content)
-
