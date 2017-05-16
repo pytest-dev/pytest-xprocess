@@ -1,3 +1,4 @@
+from __future__ import division
 
 import sys
 import os
@@ -20,13 +21,22 @@ class XProcessInfo:
     def terminate(self):
         # return codes:
         # 0   no work to do
-        # 1   terminate
+        # 1   terminated
         # -1  failed to terminate
+
         if not self.pid or not self.isrunning():
             return 0
 
+        timeout = 20
+
         try:
-            psutil.Process(self.pid).terminate()
+            proc = psutil.Process(self.pid)
+            proc.terminate()
+            try:
+                proc.wait(timeout=timeout/2)
+            except psutil.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=timeout/2)
         except psutil.Error:
             return -1
         else:
