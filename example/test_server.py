@@ -41,9 +41,9 @@ def test_server_env(xprocess):
     assert c == "X".encode("utf8")
 
 def test_shutdown(xprocess):
-    xprocess.getinfo("server3").kill()
-    xprocess.getinfo("server2").kill()
-    xprocess.getinfo("server").kill()
+    xprocess.getinfo("server3").terminate()
+    xprocess.getinfo("server2").terminate()
+    xprocess.getinfo("server").terminate()
 
 def test_functional_work_flow(testdir):
     p = testdir.makepyfile("""

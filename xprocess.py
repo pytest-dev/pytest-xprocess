@@ -17,16 +17,16 @@ class XProcessInfo:
         else:
             self.pid = None
 
-    def kill(self):
+    def terminate(self):
         # return codes:
         # 0   no work to do
-        # 1   killed
-        # -1  failed to kill
+        # 1   terminate
+        # -1  failed to terminate
         if not self.pid or not self.isrunning():
             return 0
 
         try:
-            psutil.Process(self.pid).kill()
+            psutil.Process(self.pid).terminate()
         except psutil.Error:
             return -1
         else:
@@ -86,7 +86,7 @@ class XProcess:
 
         if restart:
             if info.pid is not None:
-                info.kill()
+                info.terminate()
             controldir = info.controldir.ensure(dir=1)
             #controldir.remove()
             preparedata = preparefunc(controldir)
@@ -152,13 +152,13 @@ class XProcess:
     def _xkill(self, tw):
         ret = 0
         for info in self._infos():
-            killret = info.kill()
-            ret = ret or (killret==1)
-            if killret == 1:
+            termret = info.terminate()
+            ret = ret or (termret==1)
+            if termret == 1:
                 tw.line("%s %s TERMINATED" % (info.pid, info.name))
-            elif killret == -1:
-                tw.line("%s %s FAILED TO KILL" % (info.pid, info.name))
-            elif killret == 0:
+            elif termret == -1:
+                tw.line("%s %s FAILED TO TERMINATE" % (info.pid, info.name))
+            elif termret == 0:
                 tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
         return ret
 
