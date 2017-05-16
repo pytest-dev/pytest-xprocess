@@ -143,10 +143,15 @@ class XProcess:
             if count < 0:
                 return False
 
+    def _infos(self):
+        return (
+            self.getinfo(p.basename)
+            for p in self.rootdir.listdir()
+        )
+
     def _xkill(self, tw):
         ret = 0
-        for p in self.rootdir.listdir():
-            info = self.getinfo(p.basename)
+        for info in self._infos():
             killret = info.kill()
             ret = ret or (killret==1)
             if killret == 1:
@@ -158,8 +163,7 @@ class XProcess:
         return ret
 
     def _xshow(self, tw):
-        for p in self.rootdir.listdir():
-            info = self.getinfo(p.basename)
+        for info in self._infos():
             running = info.isrunning() and "LIVE" or "DEAD"
             tw.line("%s %s %s %s" %(info.pid, info.name, running,
                                         info.logpath,))
