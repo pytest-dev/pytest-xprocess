@@ -1,10 +1,13 @@
 import os
 import sys
+
 import py
+
 
 server_path = py.path.local(__file__).dirpath("server.py")
 
 pytest_plugins = "pytester"
+
 
 def test_server(xprocess):
     xprocess.ensure("server", lambda cwd:
@@ -16,6 +19,7 @@ def test_server(xprocess):
     c = sock.recv(1)
     assert c == "1".encode("utf8")
 
+
 def test_server2(xprocess):
     xprocess.ensure("server2", lambda cwd:
         ("started", [sys.executable, server_path, 6778]))
@@ -25,6 +29,7 @@ def test_server2(xprocess):
     sock.sendall("world\n".encode("utf8"))
     c = sock.recv(1)
     assert c == "1".encode("utf8")
+
 
 def test_server_env(xprocess):
     """Can return env as third item from preparefunc."""
@@ -39,13 +44,15 @@ def test_server_env(xprocess):
     c = sock.recv(1)
     assert c == "X".encode("utf8")
 
+
 def test_shutdown(xprocess):
     xprocess.getinfo("server3").terminate()
     xprocess.getinfo("server2").terminate()
     xprocess.getinfo("server").terminate()
 
+
 def test_functional_work_flow(testdir):
-    p = testdir.makepyfile("""
+    testdir.makepyfile("""
         import sys
         def test_server(request, xprocess):
             xprocess.ensure("server", lambda cwd:
