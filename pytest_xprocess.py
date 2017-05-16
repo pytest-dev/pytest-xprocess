@@ -33,7 +33,10 @@ def pytest_cmdline_main(config):
         tw = py.io.TerminalWriter()
         rootdir = getrootdir(config)
         xprocess = XProcess(config, rootdir)
-        return xprocess._killxshow(tw, xkill)
+    if xkill:
+        return xprocess._xkill(tw)
+    if xshow:
+        return xprocess._xshow(tw)
 
 @pytest.fixture(scope="session")
 def xprocess(request):

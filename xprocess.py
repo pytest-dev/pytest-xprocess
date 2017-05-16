@@ -143,21 +143,24 @@ class XProcess:
             if count < 0:
                 return False
 
-    def _killxshow(self, tw, xkill):
+    def _xkill(self, tw):
         ret = 0
         for p in self.rootdir.listdir():
             info = self.getinfo(p.basename)
-            if xkill:
-                killret = info.kill()
-                ret = ret or (killret==1)
-                if killret == 1:
-                    tw.line("%s %s TERMINATED" % (info.pid, info.name))
-                elif killret == -1:
-                    tw.line("%s %s FAILED TO KILL" % (info.pid, info.name))
-                elif killret == 0:
-                    tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
-            else:
-                running = info.isrunning() and "LIVE" or "DEAD"
-                tw.line("%s %s %s %s" %(info.pid, info.name, running,
-                                            info.logpath,))
+            killret = info.kill()
+            ret = ret or (killret==1)
+            if killret == 1:
+                tw.line("%s %s TERMINATED" % (info.pid, info.name))
+            elif killret == -1:
+                tw.line("%s %s FAILED TO KILL" % (info.pid, info.name))
+            elif killret == 0:
+                tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
         return ret
+
+    def _xshow(self, tw):
+        for p in self.rootdir.listdir():
+            info = self.getinfo(p.basename)
+            running = info.isrunning() and "LIVE" or "DEAD"
+            tw.line("%s %s %s %s" %(info.pid, info.name, running,
+                                        info.logpath,))
+        return 0
