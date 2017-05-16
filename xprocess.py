@@ -1,10 +1,9 @@
 
 import sys
 import os
-import py
-import psutil
 
-std = py.std
+from py import std
+import psutil
 
 
 def do_killxshow(xprocess, tw, xkill):
