@@ -1,3 +1,12 @@
+0.11
+-----------
+
+- When tearing down processes (through ``--xkill``), the
+  more polite SIGTERM is used before invoking SIGKILL,
+  allowing the process to cleanly shutdown. See
+  https://github.com/pytest-dev/pytest-xprocess/issues/1
+  for more details.
+
 0.10
 -----------
 

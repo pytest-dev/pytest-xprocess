@@ -1,17 +1,12 @@
-
-# content of conftest.py
-
 import pytest
-import subprocess
-import textwrap
 import py
-import sys
-import os
+
+from xprocess import XProcess
 
 
-from xprocess import XProcess, do_killxshow
 print_ = py.builtin.print_
 std = py.std
+
 
 def pytest_addoption(parser):
     group = parser.getgroup("xprocess",
@@ -21,9 +16,11 @@ def pytest_addoption(parser):
     group.addoption('--xshow', action="store_true",
         help="show status of external process")
 
+
 def getrootdir(config):
     from pytest_cache import getrootdir
     return getrootdir(config, ".xprocess").ensure(dir=1)
+
 
 def pytest_cmdline_main(config):
     xkill = config.option.xkill
@@ -33,7 +30,11 @@ def pytest_cmdline_main(config):
         tw = py.io.TerminalWriter()
         rootdir = getrootdir(config)
         xprocess = XProcess(config, rootdir)
-        return do_killxshow(xprocess, tw, xkill)
+    if xkill:
+        return xprocess._xkill(tw)
+    if xshow:
+        return xprocess._xshow(tw)
+
 
 @pytest.fixture(scope="session")
 def xprocess(request):
@@ -42,6 +43,7 @@ def xprocess(request):
     """
     rootdir = getrootdir(request.config)
     return XProcess(request.config, rootdir)
+
 
 @pytest.mark.hookwrapper
 def pytest_runtest_makereport(item, call):
@@ -55,4 +57,3 @@ def pytest_runtest_makereport(item, call):
             longrepr = getattr(report, "longrepr", None)
             if hasattr(longrepr, "addsection"):
                 longrepr.addsection("%s log" %name, content)
-

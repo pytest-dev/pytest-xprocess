@@ -1,44 +1,11 @@
+from __future__ import division
 
 import sys
 import os
-import py
+
+from py import std
 import psutil
 
-std = py.std
-
-def do_xkill(info):
-    # return codes:
-    # 0   no work to do
-    # 1   killed
-    # -1  failed to kill
-    if not info.pid or not info.isrunning():
-        return 0
-
-    try:
-        psutil.Process(info.pid).kill()
-    except psutil.Error:
-        return -1
-    else:
-        return 1
-
-def do_killxshow(xprocess, tw, xkill):
-    ret = 0
-    for p in xprocess.rootdir.listdir():
-        info = xprocess.getinfo(p.basename)
-        if xkill:
-            killret = do_xkill(info)
-            ret = ret or (killret==1)
-            if killret == 1:
-                tw.line("%s %s TERMINATED" % (info.pid, info.name))
-            elif killret == -1:
-                tw.line("%s %s FAILED TO KILL" % (info.pid, info.name))
-            elif killret == 0:
-                tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
-        else:
-            running = info.isrunning() and "LIVE" or "DEAD"
-            tw.line("%s %s %s %s" %(info.pid, info.name, running,
-                                        info.logpath,))
-    return ret
 
 class XProcessInfo:
     def __init__(self, path, name):
@@ -51,8 +18,29 @@ class XProcessInfo:
         else:
             self.pid = None
 
-    def kill(self):
-        return do_xkill(self)
+    def terminate(self):
+        # return codes:
+        # 0   no work to do
+        # 1   terminated
+        # -1  failed to terminate
+
+        if not self.pid or not self.isrunning():
+            return 0
+
+        timeout = 20
+
+        try:
+            proc = psutil.Process(self.pid)
+            proc.terminate()
+            try:
+                proc.wait(timeout=timeout/2)
+            except psutil.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=timeout/2)
+        except psutil.Error:
+            return -1
+        else:
+            return 1
 
     def isrunning(self):
         if self.pid is None:
@@ -108,7 +96,7 @@ class XProcess:
 
         if restart:
             if info.pid is not None:
-                info.kill()
+                info.terminate()
             controldir = info.controldir.ensure(dir=1)
             #controldir.remove()
             preparedata = preparefunc(controldir)
@@ -150,7 +138,7 @@ class XProcess:
                 raise RuntimeError("Could not start process %s" % name)
         logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         logfiles[name] = f
-        newinfo = self.getinfo(name)
+        self.getinfo(name)
         return info.pid, info.logpath
 
     def _checkpattern(self, f, pattern, count=50):
@@ -165,3 +153,28 @@ class XProcess:
             if count < 0:
                 return False
 
+    def _infos(self):
+        return (
+            self.getinfo(p.basename)
+            for p in self.rootdir.listdir()
+        )
+
+    def _xkill(self, tw):
+        ret = 0
+        for info in self._infos():
+            termret = info.terminate()
+            ret = ret or (termret==1)
+            if termret == 1:
+                tw.line("%s %s TERMINATED" % (info.pid, info.name))
+            elif termret == -1:
+                tw.line("%s %s FAILED TO TERMINATE" % (info.pid, info.name))
+            elif termret == 0:
+                tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
+        return ret
+
+    def _xshow(self, tw):
+        for info in self._infos():
+            running = info.isrunning() and "LIVE" or "DEAD"
+            tw.line("%s %s %s %s" %(info.pid, info.name, running,
+                                        info.logpath,))
+        return 0

@@ -15,7 +15,7 @@ pre-configure test-specific databases (Postgres, Couchdb, ...).
 
 Additionally there are two new command line options::
 
-     --xkill  # kills all external processes
+     --xkill  # terminates all external processes
      --xshow  # shows currently running processes and log files
 
 
