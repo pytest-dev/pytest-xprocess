@@ -2,6 +2,7 @@ from __future__ import division
 
 import sys
 import os
+import warnings
 
 from py import std
 import psutil
@@ -41,6 +42,10 @@ class XProcessInfo:
             return -1
         else:
             return 1
+
+    def kill(self):
+        warnings.warn("Use .terminate instead of .kill", DeprecationWarning, stacklevel=2)
+        return self.terminate()
 
     def isrunning(self):
         if self.pid is None:
