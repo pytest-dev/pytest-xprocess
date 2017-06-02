@@ -1,3 +1,9 @@
+0.11.2
+------
+
+- Added argument ``pattern_match_lines`` to XProcess.ensure().
+  Defines the maximum of lines, which were taken into account for matching the pattern.
+
 0.11.1
 ------
 
