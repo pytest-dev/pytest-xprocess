@@ -5,7 +5,7 @@ if __name__ == "__main__":
         name='pytest-xprocess',
         description='pytest plugin to manage external processes across test runs',
         long_description=open("README.rst").read(),
-        version='0.11.1',
+        version='0.11.2',
         license="MIT",
         author='Holger Krekel',
         author_email='holger@merlinux.eu',

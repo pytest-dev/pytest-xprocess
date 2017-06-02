@@ -75,7 +75,7 @@ class XProcess:
         """ return Process Info for the given external process. """
         return XProcessInfo(self.rootdir, name)
 
-    def ensure(self, name, preparefunc, restart=False):
+    def ensure(self, name, preparefunc, restart=False, pattern_match_lines=50):
         """ returns (PID, logfile) from a newly started or already
             running process.
 
@@ -89,6 +89,10 @@ class XProcess:
                 the regular expression ``waitpattern`` must be found
 
         @param restart: force restarting the process if it is running.
+
+        @param pattern_match_lines: amount of lines from stdout, which shall
+                                    be used to search for the pattern.
+                                    Default is 50.
 
         @return: (PID, logfile) logfile will be seeked to the end if the
                  server was running, otherwise seeked to the line after
@@ -134,7 +138,7 @@ class XProcess:
             f.seek(0, 2)
         else:
             if not callable(wait):
-                check = lambda: self._checkpattern(f, wait)
+                check = lambda: self._checkpattern(f, wait, pattern_match_lines)
             else:
                 check = wait
             if check():
