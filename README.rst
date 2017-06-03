@@ -46,19 +46,20 @@ The ``Starter`` is a subclass that gets initialized with the working
 directory created for this process.  If the server has not yet been
 started:
 
-- the ``args`` are used to invoke a new subprocess with
-  environment ``env`` (a mapping) and redirect its stdout to a new logfile.
+- the ``args`` are used to invoke a new subprocess.
 
 - the ``pattern`` is waited for in the logfile before returning.
   It should thus match a state of your server where it is ready to
   answer queries.
 
-- the logfile is returned pointing to the line right after the match
+- ``env`` may be defined to customize the environment in which the
+  new subprocess is invoked. To inherit the main test process
+  environment, leave ``env`` set to the default (``None``).
+
+- stdout is redirected to a logfile, which is returned pointing to the
+  line right after the match
 
 else, if the server is already running simply the logfile is returned.
-
-To inherit the main test process environment, leave ``env`` set to the
-default (``None``).
 
 To customize the startup behavior, override other methods of the
 ProcessStarter. For example, to extend the number of lines searched
