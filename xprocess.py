@@ -3,6 +3,9 @@ from __future__ import division
 import sys
 import os
 import warnings
+import abc
+import functools
+import itertools
 
 from py import std
 import psutil
@@ -101,8 +104,7 @@ class XProcess:
                 info.terminate()
             controldir = info.controldir.ensure(dir=1)
             #controldir.remove()
-            if not issubclass(preparefunc, ProcessStarter):
-                preparefunc = ProcessStarter.wrap(preparefunc)
+            preparefunc = CompatStarter.wrap(preparefunc)
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
@@ -177,47 +179,59 @@ class ProcessStarter(object):
     def args(self):
         "The args to start the process"
 
+    @abc.abstractproperty
+    def pattern(self):
+        "The pattern to match when the process has started"
+
     def wait(self, log_file):
         "Wait until the process is ready."
-        lines = self.get_lines(log_file)
+        return any(
+            std.re.search(self.pattern, line)
+            for line in self.filter_lines(self.get_lines(log_file))
+        )
 
-    @staticmethod
-    def get_lines(log_file):
+    def filter_lines(self, lines):
+        # only consider the first 50 lines
+        limit = itertools.islice(lines, 50)
+        for line in limit:
+            self.process.log.debug(line)
+            yield line
+
+    def get_lines(self, log_file):
         while True:
-            line = f.readline()
+            line = log_file.readline()
             if not line:
                 std.time.sleep(0.1)
-
+            yield line
 
 
 class CompatStarter(ProcessStarter):
+    pattern = None
+    args = None
+
     def __init__(self, preparefunc, control_dir, process):
         self.prep(*preparefunc(control_dir))
         super(CompatStarter, self).__init__(control_dir, process)
 
     def prep(self, wait, args, env=None):
-        if callable(wait):
-            self.wait = lambda lines: wait()
-        else:
-            self.wait = functools.partial(self.expect, pattern=wait)
+        """
+        Given the return value of a preparefunc, prepare this
+        CompatStarter.
+        """
+        self.pattern = wait
         self.env = env
         self.args = args
 
+        # wait is a function, supersedes the default behavior
+        if callable(wait):
+            self.wait = lambda lines: wait()
+
     @classmethod
-    def wrap(self, prepare_func):
-        return functools.partial(CompatStarter, prepare_func)
-
-    def expect(self, pattern, lines):
-        pass
-
-    def _checkpattern(self, f, pattern, count=50):
-        while 1:
-            line = f.readline()
-            if not line:
-                std.time.sleep(0.1)
-            self.log.debug(line)
-            if std.re.search(pattern, line):
-                return True
-            count -= 1
-            if count < 0:
-                return False
+    def wrap(self, starter_cls):
+        """
+        If starter_cls is not a ProcessStarter, assume it's the legacy
+        preparefunc and return it bound to a CompatStarter.
+        """
+        if isinstance(starter_cls, type) and issubclass(starter_cls, ProcessStarter):
+            return starter_cls
+        return functools.partial(CompatStarter, starter_cls)
