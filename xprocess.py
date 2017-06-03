@@ -206,6 +206,13 @@ class ProcessStarter(object):
 
 
 class CompatStarter(ProcessStarter):
+    """
+    A compatibility ProcessStarter to handle legacy preparefunc
+    and warn of the deprecation.
+    """
+
+    # Define properties to satisfy the abstract property, though
+    # they will be overridden at the instance.
     pattern = None
     args = None
 
