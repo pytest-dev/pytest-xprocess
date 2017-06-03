@@ -11,6 +11,11 @@ from py import std
 import psutil
 
 
+# make map appear from the future
+if sys.version_info < (3,):
+    map = itertools.imap
+
+
 class XProcessInfo:
     def __init__(self, path, name):
         self.name = name
@@ -185,17 +190,19 @@ class ProcessStarter(object):
 
     def wait(self, log_file):
         "Wait until the process is ready."
+        lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
         return any(
             std.re.search(self.pattern, line)
-            for line in self.filter_lines(self.get_lines(log_file))
+            for line in lines
         )
 
     def filter_lines(self, lines):
         # only consider the first 50 lines
-        limit = itertools.islice(lines, 50)
-        for line in limit:
-            self.process.log.debug(line)
-            yield line
+        return itertools.islice(lines, 50)
+
+    def log_line(self, line):
+        self.process.log.debug(line)
+        return line
 
     def get_lines(self, log_file):
         while True:
