@@ -171,6 +171,11 @@ class XProcess:
 
 
 class ProcessStarter(object):
+    """
+    Describes the characteristics of a process to start, waiting
+    for a process to achieve a started state.
+    """
+
     env = None
     """
     The environment in which to invoke the process.
