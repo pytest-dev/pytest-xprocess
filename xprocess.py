@@ -234,4 +234,6 @@ class CompatStarter(ProcessStarter):
         """
         if isinstance(starter_cls, type) and issubclass(starter_cls, ProcessStarter):
             return starter_cls
+        depr_msg = 'Pass a ProcessStarter for preparefunc'
+        warnings.warn(depr_msg, DeprecationWarning, stacklevel=3)
         return functools.partial(CompatStarter, starter_cls)
