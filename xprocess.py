@@ -83,10 +83,7 @@ class XProcess:
                      across test runs.
 
         @param preparefunc:
-                called with a fresh empty CWD for the new process,
-                must return (waitpattern, args) tuple where
-                ``args`` are used to start the subprocess and the
-                the regular expression ``waitpattern`` must be found
+                A subclass of ProcessStarter.
 
         @param restart: force restarting the process if it is running.
 
@@ -104,16 +101,13 @@ class XProcess:
                 info.terminate()
             controldir = info.controldir.ensure(dir=1)
             #controldir.remove()
-            preparedata = preparefunc(controldir)
-            if len(preparedata) == 2:
-                wait, args = preparedata
-                env = None
-            else:
-                wait, args, env = preparedata
-            args = [str(x) for x in args]
+            if not issubclass(preparefunc, ProcessStarter):
+                preparefunc = ProcessStarter.wrap(preparefunc)
+            starter = preparefunc(controldir, self)
+            args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
-            kwargs = {'env': env}
+            kwargs = {'env': starter.env}
             if sys.platform == "win32":
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
                 if sys.version_info >= (2,7):
@@ -133,11 +127,7 @@ class XProcess:
         if not restart:
             f.seek(0, 2)
         else:
-            if not callable(wait):
-                check = lambda: self._checkpattern(f, wait)
-            else:
-                check = wait
-            if check():
+            if starter.wait(f):
                 self.log.debug("%s process startup detected", name)
             else:
                 raise RuntimeError("Could not start process %s" % name)
@@ -145,18 +135,6 @@ class XProcess:
         logfiles[name] = f
         self.getinfo(name)
         return info.pid, info.logpath
-
-    def _checkpattern(self, f, pattern, count=50):
-        while 1:
-            line = f.readline()
-            if not line:
-                std.time.sleep(0.1)
-            self.log.debug(line)
-            if std.re.search(pattern, line):
-                return True
-            count -= 1
-            if count < 0:
-                return False
 
     def _infos(self):
         return (
@@ -183,3 +161,63 @@ class XProcess:
             tw.line("%s %s %s %s" %(info.pid, info.name, running,
                                         info.logpath,))
         return 0
+
+
+class ProcessStarter(object):
+    env = None
+    """
+    The environment in which to invoke the process.
+    """
+
+    def __init__(self, control_dir, process):
+        self.control_dir = control_dir
+        self.process = process
+
+    @abc.abstractproperty
+    def args(self):
+        "The args to start the process"
+
+    def wait(self, log_file):
+        "Wait until the process is ready."
+        lines = self.get_lines(log_file)
+
+    @staticmethod
+    def get_lines(log_file):
+        while True:
+            line = f.readline()
+            if not line:
+                std.time.sleep(0.1)
+
+
+
+class CompatStarter(ProcessStarter):
+    def __init__(self, preparefunc, control_dir, process):
+        self.prep(*preparefunc(control_dir))
+        super(CompatStarter, self).__init__(control_dir, process)
+
+    def prep(self, wait, args, env=None):
+        if callable(wait):
+            self.wait = lambda lines: wait()
+        else:
+            self.wait = functools.partial(self.expect, pattern=wait)
+        self.env = env
+        self.args = args
+
+    @classmethod
+    def wrap(self, prepare_func):
+        return functools.partial(CompatStarter, prepare_func)
+
+    def expect(self, pattern, lines):
+        pass
+
+    def _checkpattern(self, f, pattern, count=50):
+        while 1:
+            line = f.readline()
+            if not line:
+                std.time.sleep(0.1)
+            self.log.debug(line)
+            if std.re.search(pattern, line):
+                return True
+            count -= 1
+            if count < 0:
+                return False
