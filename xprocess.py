@@ -3,9 +3,17 @@ from __future__ import division
 import sys
 import os
 import warnings
+import abc
+import functools
+import itertools
 
 from py import std
 import psutil
+
+
+# make map appear from the future
+if sys.version_info < (3,):
+    map = itertools.imap
 
 
 class XProcessInfo:
@@ -83,10 +91,7 @@ class XProcess:
                      across test runs.
 
         @param preparefunc:
-                called with a fresh empty CWD for the new process,
-                must return (waitpattern, args) tuple where
-                ``args`` are used to start the subprocess and the
-                the regular expression ``waitpattern`` must be found
+                A subclass of ProcessStarter.
 
         @param restart: force restarting the process if it is running.
 
@@ -104,16 +109,12 @@ class XProcess:
                 info.terminate()
             controldir = info.controldir.ensure(dir=1)
             #controldir.remove()
-            preparedata = preparefunc(controldir)
-            if len(preparedata) == 2:
-                wait, args = preparedata
-                env = None
-            else:
-                wait, args, env = preparedata
-            args = [str(x) for x in args]
+            preparefunc = CompatStarter.wrap(preparefunc)
+            starter = preparefunc(controldir, self)
+            args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
-            kwargs = {'env': env}
+            kwargs = {'env': starter.env}
             if sys.platform == "win32":
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
                 if sys.version_info >= (2,7):
@@ -133,11 +134,7 @@ class XProcess:
         if not restart:
             f.seek(0, 2)
         else:
-            if not callable(wait):
-                check = lambda: self._checkpattern(f, wait)
-            else:
-                check = wait
-            if check():
+            if starter.wait(f):
                 self.log.debug("%s process startup detected", name)
             else:
                 raise RuntimeError("Could not start process %s" % name)
@@ -145,18 +142,6 @@ class XProcess:
         logfiles[name] = f
         self.getinfo(name)
         return info.pid, info.logpath
-
-    def _checkpattern(self, f, pattern, count=50):
-        while 1:
-            line = f.readline()
-            if not line:
-                std.time.sleep(0.1)
-            self.log.debug(line)
-            if std.re.search(pattern, line):
-                return True
-            count -= 1
-            if count < 0:
-                return False
 
     def _infos(self):
         return (
@@ -183,3 +168,91 @@ class XProcess:
             tw.line("%s %s %s %s" %(info.pid, info.name, running,
                                         info.logpath,))
         return 0
+
+
+class ProcessStarter(object):
+    """
+    Describes the characteristics of a process to start, waiting
+    for a process to achieve a started state.
+    """
+
+    env = None
+    """
+    The environment in which to invoke the process.
+    """
+
+    def __init__(self, control_dir, process):
+        self.control_dir = control_dir
+        self.process = process
+
+    @abc.abstractproperty
+    def args(self):
+        "The args to start the process"
+
+    @abc.abstractproperty
+    def pattern(self):
+        "The pattern to match when the process has started"
+
+    def wait(self, log_file):
+        "Wait until the process is ready."
+        lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
+        return any(
+            std.re.search(self.pattern, line)
+            for line in lines
+        )
+
+    def filter_lines(self, lines):
+        # only consider the first 50 lines
+        return itertools.islice(lines, 50)
+
+    def log_line(self, line):
+        self.process.log.debug(line)
+        return line
+
+    def get_lines(self, log_file):
+        while True:
+            line = log_file.readline()
+            if not line:
+                std.time.sleep(0.1)
+            yield line
+
+
+class CompatStarter(ProcessStarter):
+    """
+    A compatibility ProcessStarter to handle legacy preparefunc
+    and warn of the deprecation.
+    """
+
+    # Define properties to satisfy the abstract property, though
+    # they will be overridden at the instance.
+    pattern = None
+    args = None
+
+    def __init__(self, preparefunc, control_dir, process):
+        self.prep(*preparefunc(control_dir))
+        super(CompatStarter, self).__init__(control_dir, process)
+
+    def prep(self, wait, args, env=None):
+        """
+        Given the return value of a preparefunc, prepare this
+        CompatStarter.
+        """
+        self.pattern = wait
+        self.env = env
+        self.args = args
+
+        # wait is a function, supersedes the default behavior
+        if callable(wait):
+            self.wait = lambda lines: wait()
+
+    @classmethod
+    def wrap(self, starter_cls):
+        """
+        If starter_cls is not a ProcessStarter, assume it's the legacy
+        preparefunc and return it bound to a CompatStarter.
+        """
+        if isinstance(starter_cls, type) and issubclass(starter_cls, ProcessStarter):
+            return starter_cls
+        depr_msg = 'Pass a ProcessStarter for preparefunc'
+        warnings.warn(depr_msg, DeprecationWarning, stacklevel=3)
+        return functools.partial(CompatStarter, starter_cls)

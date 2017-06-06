@@ -1,3 +1,11 @@
+0.12
+----
+
+- #3: :method:`XProcess.ensure` now accepts preferably
+  a ProcessStarter subclass to define and customize the
+  process startup behavior. Passing a simple function is
+  deprecated and will be removed in a future release.
+
 0.11.1
 ------
 
