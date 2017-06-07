@@ -28,7 +28,7 @@ uses the ``xprocess`` fixture internally::
     # content of conftest.py
 
     import pytest
-    from pytest_xprocess import ProcessStarter
+    from xprocess import ProcessStarter
 
     @pytest.fixture
     def myserver(xprocess):
