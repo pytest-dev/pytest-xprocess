@@ -69,15 +69,13 @@ class XProcess:
     def __init__(self, config, rootdir, log=None):
         self.config = config
         self.rootdir = rootdir
-        if log is None:
-            class Log:
-                def debug(self, msg, *args):
-                    if args:
-                        print(msg % args)
-                    else:
-                        print(msg)
-            log = Log()
-        self.log = log
+        class Log:
+            def debug(self, msg, *args):
+                if args:
+                    print(msg % args)
+                else:
+                    print(msg)
+        self.log = log or Log()
 
     def getinfo(self, name):
         """ return Process Info for the given external process. """
@@ -134,10 +132,9 @@ class XProcess:
         if not restart:
             f.seek(0, 2)
         else:
-            if starter.wait(f):
-                self.log.debug("%s process startup detected", name)
-            else:
+            if not starter.wait(f):
                 raise RuntimeError("Could not start process %s" % name)
+            self.log.debug("%s process startup detected", name)
         logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         logfiles[name] = f
         self.getinfo(name)
