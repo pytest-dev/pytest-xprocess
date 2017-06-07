@@ -39,7 +39,9 @@ Additionally there are two new command line options::
 -----------------------------
 
 You typically define a project-specific fixture which
-uses the ``xprocess`` fixture internally::
+uses the ``xprocess`` fixture internally:
+
+.. code-block:: python
 
     # content of conftest.py
 
@@ -81,6 +83,8 @@ else, if the server is already running simply the logfile is returned.
 To customize the startup behavior, override other methods of the
 ProcessStarter. For example, to extend the number of lines searched
 for the startup info:
+
+.. code-block:: python
 
     class Starter(ProcessStarter):
         pattern = 'process started at .*'
