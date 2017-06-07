@@ -13,4 +13,17 @@ if __name__ == "__main__":
         py_modules=['pytest_xprocess', 'xprocess'],
         entry_points={'pytest11': ['xprocess = pytest_xprocess']},
         install_requires=['pytest-cache', 'pytest>=2.3.5', 'psutil'],
+        classifiers = [
+            'Development Status :: 4 - Beta',
+            'Intended Audience :: Developers',
+            'License :: OSI Approved :: MIT License',
+            'Operating System :: POSIX',
+            'Operating System :: Microsoft :: Windows',
+            'Topic :: Software Development :: Testing',
+            'Topic :: Software Development :: Libraries',
+            'Topic :: Utilities',
+            'Programming Language :: Python :: 2.6',
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3.4',
+        ],
     )
