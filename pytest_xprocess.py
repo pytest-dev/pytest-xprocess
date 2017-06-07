@@ -18,8 +18,7 @@ def pytest_addoption(parser):
 
 
 def getrootdir(config):
-    from pytest_cache import getrootdir
-    return getrootdir(config, ".xprocess").ensure(dir=1)
+    return config.rootdir.join(".xprocess").ensure(dir=1)
 
 
 def pytest_cmdline_main(config):

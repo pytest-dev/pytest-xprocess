@@ -12,7 +12,7 @@ if __name__ == "__main__":
         url='https://github.com/pytest-dev/pytest-xprocess/',
         py_modules=['pytest_xprocess', 'xprocess'],
         entry_points={'pytest11': ['xprocess = pytest_xprocess']},
-        install_requires=['pytest-cache', 'pytest>=2.3.5', 'psutil'],
+        install_requires=['pytest>=2.8', 'psutil'],
         classifiers = [
             'Development Status :: 4 - Beta',
             'Intended Audience :: Developers',
@@ -25,5 +25,7 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 2.6',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
         ],
     )
