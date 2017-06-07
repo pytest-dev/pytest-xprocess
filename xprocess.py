@@ -48,8 +48,8 @@ class XProcessInfo:
                 proc.wait(timeout=timeout/2)
         except psutil.Error:
             return -1
-        else:
-            return 1
+
+        return 1
 
     def kill(self):
         warnings.warn("Use .terminate instead of .kill", DeprecationWarning, stacklevel=2)
