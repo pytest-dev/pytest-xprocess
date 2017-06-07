@@ -164,7 +164,7 @@ class XProcess:
 
     def _xshow(self, tw):
         for info in self._infos():
-            running = info.isrunning() and "LIVE" or "DEAD"
+            running = 'LIVE' if info.isrunning() else 'DEAD'
             tw.line("%s %s %s %s" %(info.pid, info.name, running,
                                         info.logpath,))
         return 0
