@@ -22,10 +22,7 @@ class XProcessInfo:
         self.controldir = path.ensure(name, dir=1)
         self.logpath = self.controldir.join("xprocess.log")
         self.pidpath = self.controldir.join("xprocess.PID")
-        if self.pidpath.check():
-            self.pid = int(self.pidpath.read())
-        else:
-            self.pid = None
+        self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
     def terminate(self):
         # return codes:
