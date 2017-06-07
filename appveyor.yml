@@ -3,6 +3,8 @@ environment:
   - TOXENV: "py26"
   - TOXENV: "py27"
   - TOXENV: "py34"
+  - TOXENV: "py35"
+  - TOXENV: "py36"
 
 install:
   - C:\Python36\python -m pip install tox

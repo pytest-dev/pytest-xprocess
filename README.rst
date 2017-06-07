@@ -1,3 +1,19 @@
+pytest-xprocess
+===============
+
+.. image:: https://img.shields.io/pypi/v/pytest-xprocess.svg
+    :target: https://pypi.org/project/pytest-xprocess
+
+.. image:: https://img.shields.io/pypi/pyversions/pytest-xprocess.svg
+    :target: https://pypi.org/project/pytest-xprocess
+
+.. image:: https://travis-ci.org/pytest-dev/pytest-xprocess.svg?branch=master
+    :target: https://travis-ci.org/pytest-dev/pytest-xprocess
+
+.. image:: https://ci.appveyor.com/api/projects/status/ffx3jgyfoetmewna?svg=true
+    :target: https://ci.appveyor.com/project/pytestbot/pytest-xprocess
+
+
 Experimental `py.test <https://pytest.org>`_ plugin for managing processes
 across test runs.
 
