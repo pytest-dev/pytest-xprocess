@@ -154,19 +154,20 @@ class XProcess:
         for info in self._infos():
             termret = info.terminate()
             ret = ret or (termret==1)
-            if termret == 1:
-                tw.line("%s %s TERMINATED" % (info.pid, info.name))
-            elif termret == -1:
-                tw.line("%s %s FAILED TO TERMINATE" % (info.pid, info.name))
-            elif termret == 0:
-                tw.line("%s %s NO PROCESS FOUND" % (info.pid, info.name))
+            status = {
+                1: 'TERMINATED',
+                -1: 'FAILED TO TERMINATE',
+                0: 'NO PROCESS FOUND',
+            }[termret]
+            tmpl = '{info.pid} {info.name} {status}'
+            tw.line(tmpl.format(**locals()))
         return ret
 
     def _xshow(self, tw):
         for info in self._infos():
             running = 'LIVE' if info.isrunning() else 'DEAD'
-            tw.line("%s %s %s %s" %(info.pid, info.name, running,
-                                        info.logpath,))
+            tmpl = '{info.pid} {info.name} {running} {info.logpath}'
+            tw.line(tmpl.format(**locals()))
         return 0
 
 
