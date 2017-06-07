@@ -71,10 +71,7 @@ class XProcess:
         self.rootdir = rootdir
         class Log:
             def debug(self, msg, *args):
-                if args:
-                    print(msg % args)
-                else:
-                    print(msg)
+                print(msg % args)
         self.log = log or Log()
 
     def getinfo(self, name):
