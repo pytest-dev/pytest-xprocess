@@ -4,10 +4,6 @@ import py
 from xprocess import XProcess
 
 
-print_ = py.builtin.print_
-std = py.std
-
-
 def pytest_addoption(parser):
     group = parser.getgroup("xprocess",
         "managing external processes across test-runs [xprocess]")
