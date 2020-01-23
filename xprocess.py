@@ -206,6 +206,7 @@ class ProcessStarter(object):
             line = log_file.readline()
             if not line:
                 std.time.sleep(0.1)
+                continue
             yield line
 
 
