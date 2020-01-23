@@ -5,7 +5,7 @@ if __name__ == "__main__":
         name='pytest-xprocess',
         description='pytest plugin to manage external processes across test runs',
         long_description=open("README.rst").read(),
-        version='0.12.1',
+        use_scm_version=True,
         license="MIT",
         author='Holger Krekel',
         author_email='holger@merlinux.eu',
@@ -13,6 +13,7 @@ if __name__ == "__main__":
         py_modules=['pytest_xprocess', 'xprocess'],
         entry_points={'pytest11': ['xprocess = pytest_xprocess']},
         install_requires=['pytest>=2.8', 'psutil'],
+        setup_requires=["setuptools_scm"],
         classifiers = [
             'Development Status :: 4 - Beta',
             'Intended Audience :: Developers',
