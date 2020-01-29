@@ -27,6 +27,9 @@ if __name__ == "__main__":
     class MyServer(socketserver.TCPServer):
         allow_reuse_address = True
     mainserver = MyServer(("localhost", int(sys.argv[1])), MainHandler)
+    # write a bunch of empty lines first, which should be ignored by `xprocess` (see #13)
+    for _ in range(100):
+        sys.stderr.write("\n")
     sys.stderr.write("started\n")
     sys.stderr.flush()
     mainserver.serve_forever()

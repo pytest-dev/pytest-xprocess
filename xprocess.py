@@ -194,8 +194,9 @@ class ProcessStarter(object):
         )
 
     def filter_lines(self, lines):
-        # only consider the first 50 lines
-        return itertools.islice(lines, 50)
+        # only consider the first non-empty 50 lines
+        non_empty_lines = (x for x in lines if x.strip())
+        return itertools.islice(non_empty_lines, 50)
 
     def log_line(self, line):
         self.process.log.debug(line)
