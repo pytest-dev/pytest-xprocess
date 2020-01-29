@@ -8,7 +8,7 @@ pytest-xprocess
     :target: https://pypi.org/project/pytest-xprocess
 
 .. image:: https://github.com/pytest-dev/pytest-xprocess/workflows/build/badge.svg
-  :target: https://github.com/pytest-dev/pytest-xprocess/actions   
+  :target: https://github.com/pytest-dev/pytest-xprocess/actions
 
 
 Experimental `pytest <https://docs.pytest.org/en/latest>`_ plugin for managing processes
@@ -90,8 +90,8 @@ for the startup info:
         def filter_lines(self, lines):
             return itertools.islice(lines, 500)
 
-To override the wait behavior, override :method:`ProcessStarter.wait`.
-See the :class:`xprocess.ProcessStarter` interface for more details.
+To override the wait behavior, override ``ProcessStarter.wait``.
+See the ``xprocess.ProcessStarter`` interface for more details.
 
 Note that the plugin needs to persist the process ID and logfile
 information.  It does this in a sub directory of the directory
