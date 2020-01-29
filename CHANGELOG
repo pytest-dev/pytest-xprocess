@@ -1,9 +1,14 @@
-0.13.0
+0.13.1
 ------
 
 - Drop support for Python 2.6 and 3.4.
 - Ignore empty lines in log files when looking for the pattern that indicates
   a process has started.
+
+0.13.0
+------
+
+- Never released due to deploy issues.
 
 0.12.1
 ------
