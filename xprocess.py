@@ -149,7 +149,9 @@ class XProcess:
             f.seek(0, 2)
         else:
             if not starter.wait(f):
-                raise RuntimeError("Could not start process %s" % name)
+                raise RuntimeError("Could not start process {}, the specified "
+                                   "log pattern was not found within {} lines."
+                                   .format(name, starter.max_read_lines))
             self.log.debug("%s process startup detected", name)
         logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         logfiles[name] = f
