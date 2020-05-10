@@ -82,18 +82,17 @@ started:
 
 If the server is already running, simply the logfile is returned.
 
-To customize the startup behavior, override other methods of the
-ProcessStarter. For example, to extend the number of lines searched
-for the startup info:
+- to extend the number of lines searched prior to considering the external
+  process dead, the ``max_read_lines`` property can be set.
+
+This expandability can be seen here.
 
 .. code-block:: python
 
     class Starter(ProcessStarter):
         pattern = 'process started at .*'
         args = ['command', 'arg1']
-
-        def filter_lines(self, lines):
-            return itertools.islice(lines, 500)
+        max_read_lines = 500
 
 To override the wait behavior, override ``ProcessStarter.wait``.
 See the ``xprocess.ProcessStarter`` interface for more details.
