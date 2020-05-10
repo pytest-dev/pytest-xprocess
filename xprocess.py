@@ -192,6 +192,12 @@ class ProcessStarter:
     The environment in which to invoke the process.
     """
 
+    max_read_lines = 50
+    """
+    The maximum amount of lines of the log that will be read
+    before presuming the attached process dead.
+    """
+
     def __init__(self, control_dir, process):
         self.control_dir = control_dir
         self.process = process
@@ -203,8 +209,6 @@ class ProcessStarter:
     @abc.abstractproperty
     def pattern(self):
         "The pattern to match when the process has started"
-
-    max_read_lines = 50
 
     def wait(self, log_file):
         "Wait until the process is ready."
