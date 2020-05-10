@@ -204,6 +204,8 @@ class ProcessStarter:
     def pattern(self):
         "The pattern to match when the process has started"
 
+    max_read_lines = 50
+
     def wait(self, log_file):
         "Wait until the process is ready."
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
@@ -212,7 +214,7 @@ class ProcessStarter:
     def filter_lines(self, lines):
         # only consider the first non-empty 50 lines
         non_empty_lines = (x for x in lines if x.strip())
-        return itertools.islice(non_empty_lines, 50)
+        return itertools.islice(non_empty_lines, self.max_read_lines)
 
     def log_line(self, line):
         self.process.log.debug(line)
