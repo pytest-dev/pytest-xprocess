@@ -77,8 +77,8 @@ started:
   new subprocess is invoked. To inherit the main test process
   environment, leave ``env`` set to the default (``None``).
 
-- stdout is redirected to a logfile, which is returned pointing to the
-  line right after the match
+- the first 50 lines of stdout is redirected to a logfile, which is
+  returned pointing to the line right after the match
 
 If the server is already running, simply the logfile is returned.
 
