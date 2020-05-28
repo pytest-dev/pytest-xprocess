@@ -65,7 +65,7 @@ class XProcessInfo:
             proc = psutil.Process(self.pid)
         except psutil.NoSuchProcess:
             return False
-        return proc.is_running()
+        return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
 
 
 class XProcess:
