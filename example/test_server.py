@@ -55,6 +55,12 @@ def test_server_env(xprocess):
     assert c == b"X"
 
 
+def test_is_running(xprocess):
+    assert xprocess.getinfo("server3").isrunning()
+    assert xprocess.getinfo("server2").isrunning()
+    assert xprocess.getinfo("server").isrunning()
+
+
 def test_clean_shutdown(xprocess):
     proc_names = ["server", "server2", "server3"]
     all_children = [
