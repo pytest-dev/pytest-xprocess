@@ -78,6 +78,12 @@ def test_clean_shutdown(xprocess):
         assert not xprocess.getinfo(name).isrunning()
 
 
+def test_is_not_running_after_termination(xprocess):
+    assert not xprocess.getinfo("server3").isrunning()
+    assert not xprocess.getinfo("server2").isrunning()
+    assert not xprocess.getinfo("server").isrunning()
+
+
 def test_functional_work_flow(testdir):
     testdir.makepyfile(
         """
