@@ -11,7 +11,7 @@ pytest-xprocess
   :target: https://github.com/pytest-dev/pytest-xprocess/actions
 
 
-Experimental `pytest <https://docs.pytest.org/en/latest>`_ plugin for managing processes
+`pytest <https://docs.pytest.org/en/latest>`_ plugin for managing processes
 across test runs.
 
 Usage
