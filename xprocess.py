@@ -40,17 +40,19 @@ class XProcessInfo:
             proc = psutil.Process(self.pid)
             proc.terminate()
             try:
-                proc.wait(timeout=timeout/2)
+                proc.wait(timeout=timeout / 2)
             except psutil.TimeoutExpired:
                 proc.kill()
-                proc.wait(timeout=timeout/2)
+                proc.wait(timeout=timeout / 2)
         except psutil.Error:
             return -1
 
         return 1
 
     def kill(self):
-        warnings.warn("Use .terminate instead of .kill", DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            "Use .terminate instead of .kill", DeprecationWarning, stacklevel=2
+        )
         return self.terminate()
 
     def isrunning(self):
@@ -67,9 +69,11 @@ class XProcess:
     def __init__(self, config, rootdir, log=None):
         self.config = config
         self.rootdir = rootdir
+
         class Log:
             def debug(self, msg, *args):
                 print(msg % args)
+
         self.log = log or Log()
 
     def getinfo(self, name):
@@ -77,7 +81,7 @@ class XProcess:
         return XProcessInfo(self.rootdir, name)
 
     def ensure(self, name, preparefunc, restart=False):
-        """ returns (PID, logfile) from a newly started or already
+        """returns (PID, logfile) from a newly started or already
             running process.
 
         @param name: name of the external process, used for caching info
@@ -93,6 +97,7 @@ class XProcess:
                  where the waitpattern matched.
         """
         from subprocess import Popen, STDOUT
+
         info = self.getinfo(name)
         if not restart and not info.isrunning():
             restart = True
@@ -101,24 +106,24 @@ class XProcess:
             if info.pid is not None:
                 info.terminate()
             controldir = info.controldir.ensure(dir=1)
-            #controldir.remove()
+            # controldir.remove()
             preparefunc = CompatStarter.wrap(preparefunc)
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
-            kwargs = {'env': starter.env}
+            kwargs = {"env": starter.env}
             if sys.platform == "win32":
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
-                if sys.version_info >= (2,7):
+                if sys.version_info >= (2, 7):
                     sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
                     sinfo.wShowWindow |= std.subprocess.SW_HIDE
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
-            popen = Popen(args, cwd=str(controldir),
-                          stdout=stdout, stderr=STDOUT,
-                          **kwargs)
+            popen = Popen(
+                args, cwd=str(controldir), stdout=stdout, stderr=STDOUT, **kwargs
+            )
             info.pid = pid = popen.pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
@@ -136,29 +141,26 @@ class XProcess:
         return info.pid, info.logpath
 
     def _infos(self):
-        return (
-            self.getinfo(p.basename)
-            for p in self.rootdir.listdir()
-        )
+        return (self.getinfo(p.basename) for p in self.rootdir.listdir())
 
     def _xkill(self, tw):
         ret = 0
         for info in self._infos():
             termret = info.terminate()
-            ret = ret or (termret==1)
+            ret = ret or (termret == 1)
             status = {
-                1: 'TERMINATED',
-                -1: 'FAILED TO TERMINATE',
-                0: 'NO PROCESS FOUND',
+                1: "TERMINATED",
+                -1: "FAILED TO TERMINATE",
+                0: "NO PROCESS FOUND",
             }[termret]
-            tmpl = '{info.pid} {info.name} {status}'
+            tmpl = "{info.pid} {info.name} {status}"
             tw.line(tmpl.format(**locals()))
         return ret
 
     def _xshow(self, tw):
         for info in self._infos():
-            running = 'LIVE' if info.isrunning() else 'DEAD'
-            tmpl = '{info.pid} {info.name} {running} {info.logpath}'
+            running = "LIVE" if info.isrunning() else "DEAD"
+            tmpl = "{info.pid} {info.name} {running} {info.logpath}"
             tw.line(tmpl.format(**locals()))
         return 0
 
@@ -189,10 +191,7 @@ class ProcessStarter(object):
     def wait(self, log_file):
         "Wait until the process is ready."
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
-        return any(
-            std.re.search(self.pattern, line)
-            for line in lines
-        )
+        return any(std.re.search(self.pattern, line) for line in lines)
 
     def filter_lines(self, lines):
         # only consider the first non-empty 50 lines
@@ -247,6 +246,6 @@ class CompatStarter(ProcessStarter):
         """
         if isinstance(starter_cls, type) and issubclass(starter_cls, ProcessStarter):
             return starter_cls
-        depr_msg = 'Pass a ProcessStarter for preparefunc'
+        depr_msg = "Pass a ProcessStarter for preparefunc"
         warnings.warn(depr_msg, DeprecationWarning, stacklevel=3)
         return functools.partial(CompatStarter, starter_cls)

@@ -1,4 +1,5 @@
 import os
+
 try:
     import SocketServer as socketserver
 except ImportError:
@@ -7,7 +8,7 @@ except ImportError:
 import sys
 
 
-response = os.environ.get('RESPONSE', "1").encode('utf8')
+response = os.environ.get("RESPONSE", "1").encode("utf8")
 
 
 class MainHandler(socketserver.StreamRequestHandler):
@@ -23,9 +24,12 @@ class MainHandler(socketserver.StreamRequestHandler):
             self.request.sendall(response)
             MainHandler.count += 1
 
+
 if __name__ == "__main__":
+
     class MyServer(socketserver.TCPServer):
         allow_reuse_address = True
+
     mainserver = MyServer(("localhost", int(sys.argv[1])), MainHandler)
     # write a bunch of empty lines first, which should be ignored by `xprocess` (see #13)
     for _ in range(100):
