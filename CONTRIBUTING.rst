@@ -73,13 +73,7 @@ Start Coding
 How to run tests
 ~~~~~~~~~~~~~~~~
 
-To run the tests in the current environment, just use pytest.
-
-.. code-block:: text
-
-    $ pytest
-
-Optionally, you can run the test suite with tox in multiple environments
+To run the test suite with tox in multiple environments
 
 .. code-block:: text
 
