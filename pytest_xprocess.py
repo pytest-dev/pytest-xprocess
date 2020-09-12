@@ -1,5 +1,5 @@
-import pytest
 import py
+import pytest
 
 from xprocess import XProcess
 

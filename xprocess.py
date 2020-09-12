@@ -1,14 +1,15 @@
-from __future__ import division, print_function
+from __future__ import division
+from __future__ import print_function
 
-import sys
-import os
-import warnings
 import abc
 import functools
 import itertools
+import os
+import sys
+import warnings
 
-from py import std
 import psutil
+from py import std
 
 
 # make map appear from the future
