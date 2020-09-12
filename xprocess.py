@@ -122,11 +122,7 @@ class XProcess:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
             popen = Popen(
-                args,
-                cwd=str(controldir),
-                stdout=stdout,
-                stderr=STDOUT,
-                **kwargs
+                args, cwd=str(controldir), stdout=stdout, stderr=STDOUT, **kwargs
             )
             info.pid = pid = popen.pid
             info.pidpath.write(str(pid))
@@ -248,11 +244,7 @@ class CompatStarter(ProcessStarter):
         If starter_cls is not a ProcessStarter, assume it's the legacy
         preparefunc and return it bound to a CompatStarter.
         """
-        if isinstance(
-            starter_cls, type
-        ) and issubclass(
-            starter_cls, ProcessStarter
-        ):
+        if isinstance(starter_cls, type) and issubclass(starter_cls, ProcessStarter):
             return starter_cls
         depr_msg = "Pass a ProcessStarter for preparefunc"
         warnings.warn(depr_msg, DeprecationWarning, stacklevel=3)

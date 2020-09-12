@@ -40,8 +40,7 @@ def test_server_env(xprocess):
     env = os.environ.copy()
     env["RESPONSE"] = "X"
     xprocess.ensure(
-        "server3",
-        lambda cwd: ("started", [sys.executable, server_path, 6779], env)
+        "server3", lambda cwd: ("started", [sys.executable, server_path, 6779], env)
     )
     import socket
 
