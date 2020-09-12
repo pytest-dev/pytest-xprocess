@@ -31,7 +31,8 @@ if __name__ == "__main__":
         allow_reuse_address = True
 
     mainserver = MyServer(("localhost", int(sys.argv[1])), MainHandler)
-    # write a bunch of empty lines first, which should be ignored by `xprocess` (see #13)
+    # write a bunch of empty lines first, which should be ignored by
+    # `xprocess` (see #13)
     for _ in range(100):
         sys.stderr.write("\n")
     sys.stderr.write("started\n")

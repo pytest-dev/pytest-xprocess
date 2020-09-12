@@ -8,7 +8,11 @@ def pytest_addoption(parser):
     group = parser.getgroup(
         "xprocess", "managing external processes across test-runs [xprocess]"
     )
-    group.addoption("--xkill", action="store_true", help="kill all external processes")
+    group.addoption(
+        "--xkill",
+        action="store_true",
+        help="kill all external processes"
+    )
     group.addoption(
         "--xshow", action="store_true", help="show status of external process"
     )
