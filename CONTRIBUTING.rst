@@ -22,29 +22,16 @@ Setting up your development environment
 
         git remote add fork https://github.com/{username}/pytest-xprocess
 
--   Create a new virtualenv.
+-   Using `Tox`_, create a virtual environment and install xprocess in editable mode with development dependencies.
 
     .. code-block:: text
 
-        $ python3 -m venv env
-        $ . env/bin/activate
-
--   Install pytest-xprocess in editable mode with development dependencies.
-
-    .. code-block:: text
-
-        $ pip install -e . -r requirements/dev.txt
-
--   Finally, install the pre-commit hooks and you are
-    are all set to start coding.
-
-    .. code-block:: text
-
-        $ pre-commit install
+        $ tox -e dev
+        $ source venv/bin/activate
 
 .. _Fork: https://github.com/pallets/cachelib/fork
 .. _Clone: https://help.github.com/en/articles/fork-a-repo#step-2-create-a-local-clone-of-your-fork
-
+.. _Tox: https://tox.readthedocs.io/en/latest/
 
 Start Coding
 ~~~~~~~~~~~~
@@ -66,15 +53,21 @@ Start Coding
 
         $ git push --set-upstream fork your-branch-name
 
-.. _committing as you go: https://dont-be-afraid-to-commit.readthedocs.io/en/latest/git/commandlinegit.html#commit-your-changes
 .. _create a pull request: https://help.github.com/en/articles/creating-a-pull-request
-
 
 How to run tests
 ~~~~~~~~~~~~~~~~
 
-To run the test suite with tox in multiple environments
+You can run the test suite for the current environment with
 
-.. code-block:: text
+    .. code-block:: text
 
-    $ tox
+        $ pytest
+
+To run the full test suite for all supported python versions
+
+    .. code-block:: text
+
+        $ tox
+
+Obs. CI will run tox when you submit your pull request, so this is optional.
