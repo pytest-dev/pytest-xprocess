@@ -1,6 +1,6 @@
 import os
 import sys
-
+import psutil
 import py
 
 
@@ -49,9 +49,6 @@ def test_server_env(xprocess):
     sock.sendall("hello\n".encode("utf8"))
     c = sock.recv(1)
     assert c == "X".encode("utf8")
-
-
-import psutil
 
 
 def test_clean_shutdown(xprocess):
