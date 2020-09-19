@@ -2,7 +2,7 @@
 ------
 Unreleased
 
-- Added support for recursively terminating entire process tree with 
+- Added support for recursively terminating entire process tree with
   :meth:`XProcessInfo._terminate_children()`
 
 0.13.1
@@ -11,7 +11,7 @@ released Jan 29
 
 - Drop support for Python 2.6 and 3.4.
 
-- Ignore empty lines in log files when looking for the pattern that indicates 
+- Ignore empty lines in log files when looking for the pattern that indicates
   a process has started.
 
 0.13.0

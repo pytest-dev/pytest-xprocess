@@ -53,22 +53,20 @@ def test_server_env(xprocess):
 
 
 def test_clean_shutdown(xprocess):
+    proc_names = ["server", "server2", "server3"]
     all_children = [
-        psutil.Process(xprocess.getinfo("server").pid).children(),
-        psutil.Process(xprocess.getinfo("server2").pid).children(),
-        psutil.Process(xprocess.getinfo("server3").pid).children(),
+        psutil.Process(xprocess.getinfo(name).pid).children() for name in proc_names
     ]
     children_pids = []
-    for server_children in all_children:
-        assert len(server_children) >= 1
-        children_pids += [c.pid for c in server_children]
-
-    xprocess.getinfo("server3").terminate(kill_proc_tree=True)
-    xprocess.getinfo("server2").terminate(kill_proc_tree=True)
-    xprocess.getinfo("server").terminate(kill_proc_tree=True)
-
+    for proc_children in all_children:
+        assert len(proc_children) >= 1
+        children_pids += [c.pid for c in proc_children]
+    for name in proc_names:
+        xprocess.getinfo(name).terminate()
     for pid in children_pids:
         assert not psutil.pid_exists(pid)
+    for name in proc_names:
+        assert not xprocess.getinfo(name).isrunning()
 
 
 def test_shutdown_legacy(xprocess):
