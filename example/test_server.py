@@ -6,13 +6,14 @@ import py
 
 
 server_path = py.path.local(__file__).dirpath("server.py")
+mulproc_server_path = py.path.local(__file__).dirpath("server-multiprocess.py")
 
 pytest_plugins = "pytester"
 
 
 def test_server(xprocess):
     xprocess.ensure(
-        "server", lambda cwd: ("started", [sys.executable, server_path, 6777])
+        "server", lambda cwd: ("started", [sys.executable, mulproc_server_path, 6777])
     )
     import socket
 
@@ -25,7 +26,7 @@ def test_server(xprocess):
 
 def test_server2(xprocess):
     xprocess.ensure(
-        "server2", lambda cwd: ("started", [sys.executable, server_path, 6778])
+        "server2", lambda cwd: ("started", [sys.executable, mulproc_server_path, 6778])
     )
     import socket
 
@@ -41,7 +42,8 @@ def test_server_env(xprocess):
     env = os.environ.copy()
     env["RESPONSE"] = "X"
     xprocess.ensure(
-        "server3", lambda cwd: ("started", [sys.executable, server_path, 6779], env)
+        "server3",
+        lambda cwd: ("started", [sys.executable, mulproc_server_path, 6779], env),
     )
     import socket
 
