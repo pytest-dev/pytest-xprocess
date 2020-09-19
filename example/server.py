@@ -1,4 +1,6 @@
 import os
+from multiprocessing import Process
+from time import sleep
 
 try:
     import SocketServer as socketserver
@@ -25,7 +27,15 @@ class MainHandler(socketserver.StreamRequestHandler):
             MainHandler.count += 1
 
 
+def _do_nothing():
+    while True:
+        sleep(10)
+
+
 if __name__ == "__main__":
+    # spawn children for testing proc tree termination
+    Process(target=_do_nothing).start()
+    Process(target=_do_nothing).start()
 
     class MyServer(socketserver.TCPServer):
         allow_reuse_address = True
