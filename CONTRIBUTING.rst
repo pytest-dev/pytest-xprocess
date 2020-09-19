@@ -71,3 +71,18 @@ To run the full test suite for all supported python versions
         $ tox
 
 Obs. CI will run tox when you submit your pull request, so this is optional.
+
+Checking Test Coverage
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To get a complete report of code sections not being touched by the
+test suite run ``pytest`` using ``coverage``.
+
+.. code-block:: text
+
+    $ coverage run -m pytest
+    $ coverage html
+
+Open ``htmlcov/index.html`` in your browser.
+
+More about converage `here <https://coverage.readthedocs.io>`__.
