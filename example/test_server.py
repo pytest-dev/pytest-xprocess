@@ -51,10 +51,26 @@ def test_server_env(xprocess):
     assert c == "X".encode("utf8")
 
 
-def test_shutdown(xprocess):
-    xprocess.getinfo("server3").terminate()
-    xprocess.getinfo("server2").terminate()
-    xprocess.getinfo("server").terminate()
+import psutil
+
+
+def test_clean_shutdown(xprocess):
+    all_children = [
+        psutil.Process(xprocess.getinfo("server").pid).children(),
+        psutil.Process(xprocess.getinfo("server2").pid).children(),
+        psutil.Process(xprocess.getinfo("server3").pid).children(),
+    ]
+    children_pids = []
+    for server_children in all_children:
+        assert len(server_children) >= 1
+        children_pids += [c.pid for c in server_children]
+
+    xprocess.getinfo("server3").terminate(kill_proc_tree=True)
+    xprocess.getinfo("server2").terminate(kill_proc_tree=True)
+    xprocess.getinfo("server").terminate(kill_proc_tree=True)
+
+    for pid in children_pids:
+        assert not psutil.pid_exists(pid)
 
 
 def test_shutdown_legacy(xprocess):
