@@ -25,7 +25,16 @@ class XProcessInfo:
         self.pidpath = self.controldir.join("xprocess.PID")
         self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
-    def _terminate_children(self, proc, timeout=3):
+    def _terminate_children(self, proc, timeout=10):
+        """Recursively terminates children of proc but not proc itself.
+
+        This is the default behavior unless explicitly disabled by
+        setting ``kill_proc_tree`` flag to false when calling
+        ``XProcessInfo.terminate``.
+
+        :param proc: The proc whose children will be terminated
+        :return: None
+        """
         children = proc.children(recursive=True)
         for p in children:
             p.terminate()
@@ -33,7 +42,7 @@ class XProcessInfo:
         for p in alive:
             p.kill()
 
-    def terminate(self, kill_proc_tree=False):
+    def terminate(self, kill_proc_tree=True):
         # return codes:
         # 0   no work to do
         # 1   terminated
@@ -42,7 +51,7 @@ class XProcessInfo:
         if not self.pid or not self.isrunning():
             return 0
 
-        timeout = 3
+        timeout = 20
         try:
             proc = psutil.Process(self.pid)
             if kill_proc_tree:
