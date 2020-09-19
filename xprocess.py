@@ -25,7 +25,15 @@ class XProcessInfo:
         self.pidpath = self.controldir.join("xprocess.PID")
         self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
-    def terminate(self):
+    def _terminate_children(self, proc, timeout=3):
+        children = proc.children(recursive=True)
+        for p in children:
+            p.terminate()
+        _, alive = psutil.wait_procs(children, timeout=timeout)
+        for p in alive:
+            p.kill()
+
+    def terminate(self, kill_proc_tree=False):
         # return codes:
         # 0   no work to do
         # 1   terminated
@@ -34,16 +42,17 @@ class XProcessInfo:
         if not self.pid or not self.isrunning():
             return 0
 
-        timeout = 20
-
+        timeout = 3
         try:
             proc = psutil.Process(self.pid)
+            if kill_proc_tree:
+                self._terminate_children(proc, timeout)
             proc.terminate()
             try:
-                proc.wait(timeout=timeout / 2)
+                proc.wait(timeout=timeout)
             except psutil.TimeoutExpired:
                 proc.kill()
-                proc.wait(timeout=timeout / 2)
+                proc.wait(timeout=timeout)
         except psutil.Error:
             return -1
 
