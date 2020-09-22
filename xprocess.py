@@ -5,6 +5,7 @@ import abc
 import functools
 import itertools
 import os
+import signal
 import sys
 import warnings
 
@@ -25,8 +26,8 @@ class XProcessInfo:
         self.pidpath = self.controldir.join("xprocess.PID")
         self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
-    def _terminate_children(self, proc, timeout=10):
-        """Recursively terminates children of proc but not proc itself.
+    def terminate(self, **kwargs):
+        """Recursively terminates process tree.
 
         This is the default behavior unless explicitly disabled by
         setting ``kill_proc_tree`` flag to false when calling
@@ -34,40 +35,30 @@ class XProcessInfo:
 
         :param proc: The proc whose children will be terminated
         :return: None
-        """
-        children = proc.children(recursive=True)
-        for p in children:
-            p.terminate()
-        _, alive = psutil.wait_procs(children, timeout=timeout)
-        for p in alive:
-            p.kill()
 
-    def terminate(self, **kwargs):
-        # return codes:
-        # 0   no work to do
-        # 1   terminated
-        # -1  failed to terminate
+        return codes:
+        0   no work to do
+        1   terminated
+        -1  failed to terminate
+        """
         kill_proc_tree = kwargs.pop("kill_proc_tree", True)
         if kwargs:
             raise TypeError("unknown keyword arguments: {}".format(kwargs.keys()))
-
         if not self.pid or not self.isrunning():
             return 0
-
         timeout = 20
-        try:
-            proc = psutil.Process(self.pid)
-            if kill_proc_tree:
-                self._terminate_children(proc, timeout)
-            proc.terminate()
-            try:
-                proc.wait(timeout=timeout)
-            except psutil.TimeoutExpired:
-                proc.kill()
-                proc.wait(timeout=timeout)
-        except psutil.Error:
+        parent = psutil.Process(self.pid)
+        kill_list = [parent]
+        if kill_proc_tree:
+            kill_list += parent.children(recursive=True)
+        for p in kill_list:
+            p.send_signal(signal.SIGTERM)
+        _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+        for p in alive:
+            p.send_signal(signal.SIGKILL)
+        _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+        if alive:
             return -1
-
         return 1
 
     def kill(self):
