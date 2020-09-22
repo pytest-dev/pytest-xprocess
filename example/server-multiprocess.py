@@ -12,9 +12,6 @@ except ImportError:
 import sys
 
 
-response = os.environ.get("RESPONSE", "1").encode("utf8")
-
-
 def _do_nothing():
     while True:
         sleep(10)
