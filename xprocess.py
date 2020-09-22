@@ -42,11 +42,14 @@ class XProcessInfo:
         for p in alive:
             p.kill()
 
-    def terminate(self, kill_proc_tree=True):
+    def terminate(self, **kwargs):
         # return codes:
         # 0   no work to do
         # 1   terminated
         # -1  failed to terminate
+        kill_proc_tree = kwargs.pop("kill_proc_tree", True)
+        if kwargs:
+            raise TypeError("unknown keyword arguments: {}".format(kwargs.keys()))
 
         if not self.pid or not self.isrunning():
             return 0
