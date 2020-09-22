@@ -2,8 +2,10 @@
 ------
 Unreleased
 
-- Added support for recursively terminating entire process tree with
-  :meth:`XProcessInfo._terminate_children()`
+- Now ``XProcessInfo.terminate`` will by default also terminate the entire 
+  process tree. This is safer as there's no risk of leaving lingering processes
+  behind. If for some reason you need the previous behavior of only terminating
+  the root process, pass ```kill_proc_tree=False`` to ``XProcessInfo.terminate``.
 
 0.13.1
 ------
