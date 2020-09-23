@@ -29,8 +29,8 @@ class XProcessInfo:
     def terminate(self, **kwargs):
         """Recursively terminates process tree.
 
-        This is the default behavior unless explicitly disabled by
-        setting ``kill_proc_tree`` flag to false when calling
+        This is the default behavior unless explicitly disabled by setting
+        kill_proc_tree keyword-only parameter to false when calling
         ``XProcessInfo.terminate``.
 
         :param proc: The proc whose children will be terminated
