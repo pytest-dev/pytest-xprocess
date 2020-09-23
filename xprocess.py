@@ -45,6 +45,7 @@ class XProcessInfo:
             -1  failed to terminate
         """
         kill_proc_tree = kwargs.pop("kill_proc_tree", True)
+        timeout = kwargs.pop("timeout", 20)
         if kwargs:
             raise TypeError("unknown keyword arguments: {}".format(kwargs.keys()))
         if not self.pid or not self.isrunning():
