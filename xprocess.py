@@ -33,13 +33,16 @@ class XProcessInfo:
         kill_proc_tree keyword-only parameter to false when calling
         ``XProcessInfo.terminate``.
 
-        :param proc: The proc whose children will be terminated
-        :return: None
-
+        :param kill_proc_tree: Enable/disable recursive process tree
+                               termination. Defaults to True.
+        :param timeout: Maximum time in seconds to wait on process termination.
+                        When timeout is reached after sending SIGTERM, this
+                        method will attempt to SIGKILL the process and raise an
+                        exception in case the operation times out again.
         return codes:
-        0   no work to do
-        1   terminated
-        -1  failed to terminate
+            0   no work to do
+            1   terminated
+            -1  failed to terminate
         """
         kill_proc_tree = kwargs.pop("kill_proc_tree", True)
         if kwargs:
