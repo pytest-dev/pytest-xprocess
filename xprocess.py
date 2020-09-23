@@ -47,17 +47,20 @@ class XProcessInfo:
         if not self.pid or not self.isrunning():
             return 0
         timeout = 20
-        parent = psutil.Process(self.pid)
-        kill_list = [parent]
-        if kill_proc_tree:
-            kill_list += parent.children(recursive=True)
-        for p in kill_list:
-            p.send_signal(signal.SIGTERM)
-        _, alive = psutil.wait_procs(kill_list, timeout=timeout)
-        for p in alive:
-            p.send_signal(signal.SIGKILL)
-        _, alive = psutil.wait_procs(kill_list, timeout=timeout)
-        if alive:
+        try:
+            parent = psutil.Process(self.pid)
+            kill_list = [parent]
+            if kill_proc_tree:
+                kill_list += parent.children(recursive=True)
+            for p in kill_list:
+                p.send_signal(signal.SIGTERM)
+            _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+            for p in alive:
+                p.send_signal(signal.SIGKILL)
+            _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+            if alive:
+                return -1
+        except psutil.Error:
             return -1
         return 1
 
