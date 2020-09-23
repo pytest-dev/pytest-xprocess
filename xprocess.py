@@ -48,11 +48,13 @@ class XProcessInfo:
         timeout = kwargs.pop("timeout", 20)
         if kwargs:
             raise TypeError("unknown keyword arguments: {}".format(kwargs.keys()))
-        if not self.pid or not self.isrunning():
+        if not self.pid:
             return 0
-        timeout = 20
         try:
             parent = psutil.Process(self.pid)
+        except psutil.NoSuchProcess:
+            return 0
+        try:
             kill_list = [parent]
             if kill_proc_tree:
                 kill_list += parent.children(recursive=True)
