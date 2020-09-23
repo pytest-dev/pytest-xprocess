@@ -3,6 +3,23 @@ How to contribute
 
 All contributions are greatly appreciated!
 
+Reporting issues
+~~~~~~~~~~~~~~~~
+
+Facilitating the work of potential contributors is recommended since it
+increases the likelihood of your issue being solved quickly. The few extra
+steps listed below will help clarify problems you might be facing: 
+ 
+-   Include a `minimal reproducible example`_ when possible.
+-   Describe the expected behaviour and what actually happened including a full
+    trace-back in case of exceptions.
+-   Make sure to list details about your environment, such as your platform,
+    versions of pytest, pytest-xprocess and python release.
+
+Also, it's important to check the current open issues for similar reports
+in order to avoid duplicates.
+
+.. _minimal reproducible example: https://stackoverflow.com/help/minimal-reproducible-example
 
 Setting up your development environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
