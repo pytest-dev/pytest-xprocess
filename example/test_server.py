@@ -1,6 +1,7 @@
 import os
 import sys
 
+import psutil
 import py
 
 
@@ -40,7 +41,8 @@ def test_server_env(xprocess):
     env = os.environ.copy()
     env["RESPONSE"] = "X"
     xprocess.ensure(
-        "server3", lambda cwd: ("started", [sys.executable, server_path, 6779], env)
+        "server3",
+        lambda cwd: ("started", [sys.executable, server_path, 6779], env),
     )
     import socket
 
@@ -51,10 +53,21 @@ def test_server_env(xprocess):
     assert c == "X".encode("utf8")
 
 
-def test_shutdown(xprocess):
-    xprocess.getinfo("server3").terminate()
-    xprocess.getinfo("server2").terminate()
-    xprocess.getinfo("server").terminate()
+def test_clean_shutdown(xprocess):
+    proc_names = ["server", "server2", "server3"]
+    all_children = [
+        psutil.Process(xprocess.getinfo(name).pid).children() for name in proc_names
+    ]
+    children_pids = []
+    for proc_children in all_children:
+        assert len(proc_children) >= 1
+        children_pids += [c.pid for c in proc_children]
+    for name in proc_names:
+        xprocess.getinfo(name).terminate()
+    for pid in children_pids:
+        assert not psutil.pid_exists(pid)
+    for name in proc_names:
+        assert not xprocess.getinfo(name).isrunning()
 
 
 def test_shutdown_legacy(xprocess):
