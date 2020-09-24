@@ -1,5 +1,5 @@
 ### Expected Behavior
-<!--- Tell us should happen -->
+<!--- Tell us what should happen -->
 
 ### Actual Behavior
 <!--- Tell us what is happening -->
