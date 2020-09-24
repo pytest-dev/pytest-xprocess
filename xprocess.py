@@ -37,8 +37,8 @@ class XProcessInfo:
                                termination. Defaults to True.
         :param timeout: Maximum time in seconds to wait on process termination.
                         When timeout is reached after sending SIGTERM, this
-                        method will attempt to SIGKILL the process and raise an
-                        exception in case the operation times out again.
+                        method will attempt to SIGKILL the process and
+                        return ``-1`` in case the operation times out again.
         return codes:
             0   no work to do
             1   terminated
