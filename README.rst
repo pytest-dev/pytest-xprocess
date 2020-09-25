@@ -22,7 +22,7 @@ install via::
     pip install pytest-xprocess
 
 This will provide a ``xprocess`` fixture which helps
-you to ensure that one ore more longer-running processes
+you to ensure that one or more longer-running processes
 are present for your tests.  You can use it to start and
 pre-configure test-specific databases (Postgres, Couchdb, ...).
 
