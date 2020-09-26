@@ -14,19 +14,21 @@ pytest-xprocess
 `pytest <https://docs.pytest.org/en/latest>`_ plugin for managing processes
 across test runs.
 
-Usage
----------
+Setting Up
+----------
 
-install via::
+To use ``pytest-xprocess`` you just need to install it via::
 
     pip install pytest-xprocess
 
-This will provide a ``xprocess`` fixture which helps
-you to ensure that one or more longer-running processes
-are present for your tests.  You can use it to start and
-pre-configure test-specific databases (Postgres, Couchdb, ...).
+and that's all!
 
-Additionally there are two new command line options::
+This will provide a ``xprocess`` fixture which can be used to ensure that
+external processes on which your application depends are up and running during
+testing. You can also use it to start and pre-configure test-specific databases
+(i.e. Postgres, Couchdb).
+
+Additionally, there are two new command line options::
 
      --xkill  # terminates all external processes
      --xshow  # shows currently running processes and log files
@@ -36,7 +38,7 @@ Additionally there are two new command line options::
 -----------------------------
 
 You typically define a project-specific fixture which
-uses the ``xprocess`` fixture internally:
+uses ``xprocess`` internally:
 
 .. code-block:: python
 
@@ -53,18 +55,21 @@ uses the ``xprocess`` fixture internally:
 
         logfile = xprocess.ensure("myserver", Starter)
         conn = # create a connection or url/port info to the server
-        return conn
+        yield conn
+        xprocess.getinfo("myserver").terminate() # clean up afterwards
 
-The ``xprocess.ensure`` function takes a name for the external process
-because you can have multiple external processes.
+The ``xprocess.ensure`` method takes the name of an external process and will
+make sure it is running during your testing phase. Also, you are not restricted
+to having a single external process at a time, ``xprocess`` can be used to handle
+multiple diferent processes or several instances of the same process.
 
 The ``Starter`` is a subclass that gets initialized with the working
 directory created for this process.  If the server has not yet been
 started:
 
-- the ``args`` are used to invoke a new subprocess.
+- ``args`` are used to invoke a new subprocess.
 
-- the ``pattern`` is waited for in the logfile before returning.
+- ``pattern`` is waited for in the logfile before returning.
   It should thus match a state of your server where it is ready to
   answer queries.
 
@@ -75,7 +80,7 @@ started:
 - stdout is redirected to a logfile, which is returned pointing to the
   line right after the match
 
-else, if the server is already running simply the logfile is returned.
+If the server is already running, simply the logfile is returned.
 
 To customize the startup behavior, override other methods of the
 ProcessStarter. For example, to extend the number of lines searched
