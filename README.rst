@@ -38,7 +38,7 @@ Additionally, there are two new command line options::
 -----------------------------
 
 You typically define a project-specific fixture which
-uses the ``xprocess`` internally:
+uses ``xprocess`` internally:
 
 .. code-block:: python
 
