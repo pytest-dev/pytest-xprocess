@@ -70,12 +70,6 @@ class XProcessInfo:
             return -1
         return 1
 
-    def kill(self):
-        warnings.warn(
-            "Use .terminate instead of .kill", DeprecationWarning, stacklevel=2
-        )
-        return self.terminate()
-
     def isrunning(self):
         if self.pid is None:
             return False
