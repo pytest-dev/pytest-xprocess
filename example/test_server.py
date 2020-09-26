@@ -70,20 +70,6 @@ def test_clean_shutdown(xprocess):
         assert not xprocess.getinfo(name).isrunning()
 
 
-def test_shutdown_legacy(xprocess):
-    """
-    Ensure XProcessInfo.kill() is still supported, if deprecated.
-    """
-
-    def runner(cwd):
-        wait_pattern = "started"
-        args = sys.executable, server_path, 6780
-        return wait_pattern, args
-
-    xprocess.ensure("server4", runner)
-    xprocess.getinfo("server4").kill()
-
-
 def test_functional_work_flow(testdir):
     testdir.makepyfile(
         """
