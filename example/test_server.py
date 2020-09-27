@@ -11,8 +11,9 @@ pytest_plugins = "pytester"
 
 
 def test_server(xprocess):
+    pattern = "2 , % /.%,@%@._%%# #/%/ %\n"
     xprocess.ensure(
-        "server", lambda cwd: ("started", [sys.executable, server_path, 6777])
+        "server", lambda cwd: (pattern, [sys.executable, server_path, 6777])
     )
     import socket
 
@@ -40,9 +41,10 @@ def test_server_env(xprocess):
     """Can return env as third item from preparefunc."""
     env = os.environ.copy()
     env["RESPONSE"] = "X"
+    pattern = "4 , % /.%,@%@._%%# #/%/ %\n"
     xprocess.ensure(
         "server3",
-        lambda cwd: ("started", [sys.executable, server_path, 6779], env),
+        lambda cwd: (pattern, [sys.executable, server_path, 6779], env),
     )
     import socket
 
