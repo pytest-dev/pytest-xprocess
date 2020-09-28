@@ -1,7 +1,8 @@
 0.15.0 (UNRELEASED)
 -------------------
 
-- Remove deprecated :meth:`XProcessInfo.kill`
+- Fixed bug when process write certain special characters to stdout
+- Removed deprecated :meth:`XProcessInfo.kill`
 
 0.14.0 (2020-09-24)
 -------------------

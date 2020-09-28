@@ -87,7 +87,10 @@ class XProcess:
 
         class Log:
             def debug(self, msg, *args):
-                print(msg % args)
+                if args:
+                    print(msg % args)
+                else:
+                    print(msg)
 
         self.log = log or Log()
 

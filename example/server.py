@@ -46,6 +46,10 @@ if __name__ == "__main__":
     # `xprocess` (see #13)
     for _ in range(100):
         sys.stderr.write("\n")
+    # Sequence of potentialy troublesome strings to test XProcess.Log.debug
+    # and string matching
+    for i in range(5):
+        sys.stderr.write("{} , % /.%,@%@._%%# #/%/ %\n".format(i))
     sys.stderr.write("started\n")
     sys.stderr.flush()
     mainserver.serve_forever()
