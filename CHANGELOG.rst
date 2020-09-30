@@ -1,6 +1,7 @@
 0.15.0 (UNRELEASED)
 -------------------
 
+- Drop support for Python 2.7
 - Fixed bug when process write certain special characters to stdout
 - Removed deprecated :meth:`XProcessInfo.kill`
 
