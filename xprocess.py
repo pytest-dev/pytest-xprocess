@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 import abc
 import functools
 import itertools
@@ -13,11 +10,6 @@ import psutil
 from py import std
 
 
-# make map appear from the future
-if sys.version_info < (3,):
-    map = itertools.imap
-
-
 class XProcessInfo:
     def __init__(self, path, name):
         self.name = name
@@ -26,7 +18,7 @@ class XProcessInfo:
         self.pidpath = self.controldir.join("xprocess.PID")
         self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
-    def terminate(self, **kwargs):
+    def terminate(self, *, kill_proc_tree=True, timeout=20):
         """Recursively terminates process tree.
 
         This is the default behavior unless explicitly disabled by setting
@@ -44,10 +36,6 @@ class XProcessInfo:
             1   terminated
             -1  failed to terminate
         """
-        kill_proc_tree = kwargs.pop("kill_proc_tree", True)
-        timeout = kwargs.pop("timeout", 20)
-        if kwargs:
-            raise TypeError("unknown keyword arguments: {}".format(kwargs.keys()))
         if not self.pid:
             return 0
         try:
@@ -183,7 +171,7 @@ class XProcess:
         return 0
 
 
-class ProcessStarter(object):
+class ProcessStarter:
     """
     Describes the characteristics of a process to start, waiting
     for a process to achieve a started state.
@@ -241,7 +229,7 @@ class CompatStarter(ProcessStarter):
 
     def __init__(self, preparefunc, control_dir, process):
         self.prep(*preparefunc(control_dir))
-        super(CompatStarter, self).__init__(control_dir, process)
+        super().__init__(control_dir, process)
 
     def prep(self, wait, args, env=None):
         """
