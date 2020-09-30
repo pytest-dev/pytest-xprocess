@@ -50,6 +50,8 @@ if __name__ == "__main__":
     # and string matching
     for i in range(5):
         sys.stderr.write("{} , % /.%,@%@._%%# #/%/ %\n".format(i))
+    # non-ascii for encode testing
+    sys.stderr.write("Ê�æ�pP��çîöē�P��adåráøū")
     sys.stderr.write("started\n")
     sys.stderr.flush()
     mainserver.serve_forever()
