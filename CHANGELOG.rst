@@ -2,7 +2,8 @@
 -------------------
 
 - Drop support for Python 2.7
-- Fixed bug when process write certain special characters to stdout
+- Fixed bug when non-ascii characters were written to stdout by external
+  process
 - Removed deprecated :meth:`XProcessInfo.kill`
 
 0.14.0 (2020-09-24)
