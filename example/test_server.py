@@ -19,9 +19,9 @@ def test_server(xprocess):
 
     sock = socket.socket()
     sock.connect(("localhost", 6777))
-    sock.sendall("hello\n".encode("utf8"))
+    sock.sendall(b"hello\n")
     c = sock.recv(1)
-    assert c == "1".encode("utf8")
+    assert c == b"1"
 
 
 def test_server2(xprocess):
@@ -32,9 +32,9 @@ def test_server2(xprocess):
 
     sock = socket.socket()
     sock.connect(("localhost", 6778))
-    sock.sendall("world\n".encode("utf8"))
+    sock.sendall(b"world\n")
     c = sock.recv(1)
-    assert c == "1".encode("utf8")
+    assert c == b"1"
 
 
 def test_server_env(xprocess):
@@ -50,9 +50,9 @@ def test_server_env(xprocess):
 
     sock = socket.socket()
     sock.connect(("localhost", 6779))
-    sock.sendall("hello\n".encode("utf8"))
+    sock.sendall(b"hello\n")
     c = sock.recv(1)
-    assert c == "X".encode("utf8")
+    assert c == b"X"
 
 
 def test_clean_shutdown(xprocess):

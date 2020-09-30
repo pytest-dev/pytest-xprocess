@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 import abc
 import functools
 import itertools
@@ -183,7 +180,7 @@ class XProcess:
         return 0
 
 
-class ProcessStarter(object):
+class ProcessStarter:
     """
     Describes the characteristics of a process to start, waiting
     for a process to achieve a started state.
@@ -241,7 +238,7 @@ class CompatStarter(ProcessStarter):
 
     def __init__(self, preparefunc, control_dir, process):
         self.prep(*preparefunc(control_dir))
-        super(CompatStarter, self).__init__(control_dir, process)
+        super().__init__(control_dir, process)
 
     def prep(self, wait, args, env=None):
         """
