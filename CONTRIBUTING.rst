@@ -46,7 +46,13 @@ Setting up your development environment
         $ tox -e dev
         $ source venv/bin/activate
 
-.. _Fork: https://github.com/pallets/cachelib/fork
+-   Install pre-commit hooks
+
+    .. code-block:: text
+
+        $ pre-commit install
+
+.. _Fork: https://github.com/pytest-dev/pytest-xprocess/fork
 .. _Clone: https://help.github.com/en/articles/fork-a-repo#step-2-create-a-local-clone-of-your-fork
 .. _Tox: https://tox.readthedocs.io/en/latest/
 
