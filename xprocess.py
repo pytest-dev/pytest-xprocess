@@ -23,7 +23,7 @@ class XProcessInfo:
         self.pidpath = self.controldir.join("xprocess.PID")
         self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
-    def terminate(self, **kwargs):
+    def terminate(self, *, kill_proc_tree=True, timeout=20):
         """Recursively terminates process tree.
 
         This is the default behavior unless explicitly disabled by setting
@@ -41,10 +41,6 @@ class XProcessInfo:
             1   terminated
             -1  failed to terminate
         """
-        kill_proc_tree = kwargs.pop("kill_proc_tree", True)
-        timeout = kwargs.pop("timeout", 20)
-        if kwargs:
-            raise TypeError("unknown keyword arguments: {}".format(kwargs.keys()))
         if not self.pid:
             return 0
         try:
