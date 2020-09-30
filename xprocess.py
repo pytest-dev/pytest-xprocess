@@ -10,11 +10,6 @@ import psutil
 from py import std
 
 
-# make map appear from the future
-if sys.version_info < (3,):
-    map = itertools.imap
-
-
 class XProcessInfo:
     def __init__(self, path, name):
         self.name = name
