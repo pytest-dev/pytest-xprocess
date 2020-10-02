@@ -1,6 +1,7 @@
 0.15.0 (UNRELEASED)
 -------------------
 
+- pytest-xprocess now uses `config.cache` to store process related files
 - Drop support for Python 2.7
 - Fixed bug when non-ascii characters were written to stdout by external
   process
