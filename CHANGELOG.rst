@@ -1,4 +1,4 @@
-0.15.0 (UNRELEASED)
+0.15.0 (2020-10-03)
 -------------------
 
 - pytest-xprocess now uses a sub-directory of `.pytest_cache` to store process related files.
