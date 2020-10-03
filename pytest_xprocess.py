@@ -15,14 +15,14 @@ def pytest_addoption(parser):
 
 
 def getrootdir(config):
-    return config.rootdir.join(".xprocess").ensure(dir=1)
+    return config.cache.makedir(".xprocess")
 
 
 def pytest_cmdline_main(config):
     xkill = config.option.xkill
     xshow = config.option.xshow
     if xkill or xshow:
-        # config._do_configure()
+        config._do_configure()
         tw = py.io.TerminalWriter()
         rootdir = getrootdir(config)
         xprocess = XProcess(config, rootdir)
