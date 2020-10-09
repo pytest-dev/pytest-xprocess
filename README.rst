@@ -101,3 +101,17 @@ See the ``xprocess.ProcessStarter`` interface for more details.
 Note that the plugin needs to persist the process ID and logfile
 information.  It does this in a sub directory of the directory
 which contains a ``pytest.ini`` or ``setup.py`` file.
+
+An important note regarding stream buffering
+--------------------------------------------
+
+There have been reports of issues with test suites hanging when users attempt
+to start external python processes with ``xprocess.ensure`` method. The reason
+for this is that pytest-xprocess relies on matching predefined string patterns
+written to your environment standard output streams to detect when processes
+start and python's `sys.stdout/sys.stderr`_ buffering ends up getting in the
+way of that. A possible solution for this problem is making both streams
+unbuffered by passing the ``-u`` command-line option to your process start
+command or setting the ``PYTHONUNBUFFERED`` environment variable.
+
+.. _sys.stdout/sys.stderr: https://docs.python.org/3/library/sys.html#sys.stderr
