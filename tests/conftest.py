@@ -1,7 +1,4 @@
-import socket
 import sys
-from abc import ABC
-from abc import abstractmethod
 from pathlib import Path
 
 import pytest
@@ -12,7 +9,7 @@ pytest_plugins = "pytester"
 
 
 @pytest.fixture
-def make_runner(xprocess, request):
+def xprocess_starter(xprocess, request):
     def _runner(start_pattern, proc_name, port):
         class Starter(ProcessStarter):
             pattern = start_pattern
@@ -26,7 +23,7 @@ def make_runner(xprocess, request):
 
 
 @pytest.fixture
-def make_terminator(xprocess):
+def xprocess_terminate(xprocess):
     def _terminator(name):
         proc = xprocess.getinfo(name)
         if proc.isrunning():
@@ -36,42 +33,26 @@ def make_terminator(xprocess):
     return _terminator
 
 
-class BaseTests(ABC):
+@pytest.fixture
+def xprocess_info(xprocess):
+    def _info(name):
+        return xprocess.getinfo(name)
+
+    return _info
+
+
+class Test:
 
     HOST = "localhost"
 
-    @property
-    def port(self):
-        raise NotImplementedError
-
-    @port.setter
-    @abstractmethod
-    def port(self):
-        raise NotImplementedError
-
-    @property
-    def data(self):
-        raise NotImplementedError
-
-    @data.setter
-    @abstractmethod
-    def data(self):
-        raise NotImplementedError
+    @pytest.fixture(autouse=True)
+    def expose_starter(self, xprocess_starter):
+        self.start_server = xprocess_starter
 
     @pytest.fixture(autouse=True)
-    def get_server(self, make_runner):
-        self._serve = make_runner
+    def expose_terminator(self, xprocess_terminate):
+        self.terminate = xprocess_terminate
 
     @pytest.fixture(autouse=True)
-    def get_terminator(self, make_terminator):
-        self._terminator = make_terminator
-
-    def test_request_response(self):
-        print("running test_base_class...")
-        self._serve("2 , % /.%,@%@._%%# #/%/ %\n", "server", 6777)
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((self.HOST, self.port))
-            sock.sendall(bytes(self.data, "utf-8"))
-            received = str(sock.recv(1024), "utf-8")
-            assert received == self.data.upper()
-        self._terminator("server")
+    def expose_info(self, xprocess_info):
+        self.get_info = xprocess_info
