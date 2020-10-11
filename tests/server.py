@@ -32,7 +32,6 @@ class TestServer(socketserver.TCPServer):
         self.spam_complex_strings()
         self.spam_non_ascii()
         print("started\n")
-        # self.fork_children()
 
     def spam_non_ascii(self):
         """non-ascii characters must be supported"""
@@ -49,19 +48,20 @@ class TestServer(socketserver.TCPServer):
         for _ in range(100):
             print("\n")
 
-    def fork_children(self):
+    def fork_children(self, target):
         """forks multiple children for testing process tree termination"""
-
-        def _wait():
-            while True:
-                sleep(1)
-
         for _ in range(5):
-            Process(target=_wait).start()
+            Process(target=target).start()
 
 
 if __name__ == "__main__":
+
+    def do_nothing():
+        while True:
+            sleep(1)
+
     HOST, PORT = "localhost", int(sys.argv[1])
     with TestServer((HOST, PORT), TestHandler) as server:
+        server.fork_children(do_nothing)
         server.print_test_patterns()
         server.serve_forever()
