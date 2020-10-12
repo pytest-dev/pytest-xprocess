@@ -10,11 +10,11 @@ pytest_plugins = "pytester"
 
 @pytest.fixture
 def xprocess_starter(xprocess, request):
-    def _runner(start_pattern, proc_name, port):
+    def _runner(start_pattern, proc_name, port, ignore_sigterm=False):
         class Starter(ProcessStarter):
             pattern = start_pattern
             server_path = Path(__file__).parent.joinpath("server.py").absolute()
-            args = [sys.executable, "-u", server_path, port]
+            args = [sys.executable, "-u", server_path, port, ignore_sigterm]
 
         logfile = xprocess.ensure(proc_name, Starter)
         return logfile
@@ -24,11 +24,11 @@ def xprocess_starter(xprocess, request):
 
 @pytest.fixture
 def xprocess_terminate(xprocess):
-    def _terminator(name):
+    def _terminator(name, **kwargs):
         proc = xprocess.getinfo(name)
         if proc.isrunning():
             print(f"process {name} (PID {proc.pid}), running, terminating...\n")
-            proc.terminate()
+            return proc.terminate(**kwargs)
 
     return _terminator
 
