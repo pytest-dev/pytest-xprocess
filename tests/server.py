@@ -17,7 +17,7 @@ class TestHandler(socketserver.StreamRequestHandler):
             line = self.rfile.readline()
             if not line:
                 break
-            print(f"received: {line}, request counter: {self.count}\n")
+            print("received: {}, request counter: {}\n".format(line, self.count))
             self.request.sendall(line.upper())
             self.count += 1
 
@@ -41,7 +41,7 @@ class TestServer(socketserver.TCPServer):
     def spam_complex_strings(self):
         """Special/control characters should not cause problems"""
         for i in range(5):
-            print(f"{i} , % /.%,@%@._%%# #/%/ %\n")
+            print("{} , % /.%,@%@._%%# #/%/ %\n".format(i))
 
     def spam_blank_lines(self):
         """Blank lines should be igored by xprocess"""
