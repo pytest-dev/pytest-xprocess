@@ -1,3 +1,4 @@
+import signal
 import socketserver
 import sys
 from multiprocessing import Process
@@ -12,7 +13,6 @@ class TestHandler(socketserver.StreamRequestHandler):
     count = 0
 
     def handle(self):
-        print("handling stuff...\n")
         while True:
             line = self.rfile.readline()
             if not line:
@@ -48,9 +48,9 @@ class TestServer(socketserver.TCPServer):
         for _ in range(100):
             print("\n")
 
-    def fork_children(self, target):
+    def fork_children(self, target, amount):
         """forks multiple children for testing process tree termination"""
-        for _ in range(5):
+        for _ in range(amount):
             Process(target=target).start()
 
 
@@ -62,6 +62,16 @@ if __name__ == "__main__":
 
     HOST, PORT = "localhost", int(sys.argv[1])
     with TestServer((HOST, PORT), TestHandler) as server:
-        server.fork_children(do_nothing)
+        # for normal children
+        server.fork_children(do_nothing, 3)
+        # ignore sigterm for testing XProcessInfo.terminate
+        # when processes fail to exit
+        try:
+            if sys.argv[2].lower() == "true":
+                signal.signal(signal.SIGTERM, signal.SIG_IGN)
+                # fork children that ignore SIGTERM
+                server.fork_children(do_nothing, 2)
+        except IndexError:
+            pass
         server.print_test_patterns()
         server.serve_forever()
