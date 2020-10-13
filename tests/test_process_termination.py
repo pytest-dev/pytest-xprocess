@@ -52,4 +52,4 @@ class TestProcessTermination(Test):
         self.start_server("started", proc_name, port, ignore_sigterm=True)
         # since terminate with sigterm will fail, set a lower
         # timeout before sending sigkill so tests won't take too long
-        assert self.terminate(proc_name, timeout=1) == 1
+        assert self.terminate(proc_name, timeout=10) == 1
