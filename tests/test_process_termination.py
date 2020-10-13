@@ -59,5 +59,5 @@ class TestProcessTermination(Test):
         pid = self.get_info(proc_name).pid
         assert (
             self.terminate(proc_name, timeout=10) == 1
-            or psutil.Process(pid).status == psutil.STATUS_ZOMBIE
+            or psutil.Process(pid).status() == psutil.STATUS_ZOMBIE
         )
