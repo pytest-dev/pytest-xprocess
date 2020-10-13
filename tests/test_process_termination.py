@@ -56,4 +56,8 @@ class TestProcessTermination(Test):
         # explicitly tell xprocess_starter fixture to make
         # server instance ignore SIGTERM
         self.start_server("started", proc_name, port, ignore_sigterm=True)
-        assert self.terminate(proc_name, timeout=20) == 1
+        pid = self.get_info(proc_name).pid
+        assert (
+            self.terminate(proc_name, timeout=10) == 1
+            or psutil.Process(pid).status == psutil.STATUS_ZOMBIE
+        )
