@@ -1,3 +1,5 @@
+import sys
+
 import psutil
 import pytest
 from conftest import Test
@@ -45,11 +47,13 @@ class TestProcessTermination(Test):
             except Exception:
                 pass
 
+    @pytest.mark.skipif(
+        sys.platform == "win32",
+        reason="on windows SIGTERM is treated as an alias for kill()",
+    )
     @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2")])
     def test_sigkill_after_failed_sigterm(self, port, proc_name):
         # explicitly tell xprocess_starter fixture to make
         # server instance ignore SIGTERM
         self.start_server("started", proc_name, port, ignore_sigterm=True)
-        # since terminate with sigterm will fail, set a lower
-        # timeout before sending sigkill so tests won't take too long
         assert self.terminate(proc_name, timeout=10) == 1
