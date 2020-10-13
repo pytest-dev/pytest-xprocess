@@ -139,9 +139,8 @@ class XProcess:
             kwargs = {"env": starter.env}
             if sys.platform == "win32":  # pragma: no cover
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
-                if sys.version_info >= (2, 7):
-                    sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
-                    sinfo.wShowWindow |= std.subprocess.SW_HIDE
+                sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
+                sinfo.wShowWindow |= std.subprocess.SW_HIDE
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
