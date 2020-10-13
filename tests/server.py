@@ -61,17 +61,17 @@ if __name__ == "__main__":
             sleep(1)
 
     HOST, PORT = "localhost", int(sys.argv[1])
-    with TestServer((HOST, PORT), TestHandler) as server:
-        # for normal children
-        server.fork_children(do_nothing, 3)
-        # ignore sigterm for testing XProcessInfo.terminate
-        # when processes fail to exit
-        try:
-            if sys.argv[2].lower() == "true":
-                signal.signal(signal.SIGTERM, signal.SIG_IGN)
-                # fork children that ignore SIGTERM
-                server.fork_children(do_nothing, 2)
-        except IndexError:
-            pass
-        server.print_test_patterns()
-        server.serve_forever()
+    server = TestServer((HOST, PORT), TestHandler)
+    # for normal children
+    server.fork_children(do_nothing, 3)
+    # ignore sigterm for testing XProcessInfo.terminate
+    # when processes fail to exit
+    try:
+        if sys.argv[2].lower() == "true":
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+            # fork children that ignore SIGTERM
+            server.fork_children(do_nothing, 2)
+    except IndexError:
+        pass
+    server.print_test_patterns()
+    server.serve_forever()
