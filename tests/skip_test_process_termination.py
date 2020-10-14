@@ -5,10 +5,6 @@ import pytest
 from conftest import Test
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="on windows SIGTERM is treated as an alias for kill()",
-)
 class TestProcessTermination(Test):
     """test termination of process and children"""
 
