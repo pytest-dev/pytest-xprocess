@@ -20,7 +20,7 @@ class TestFunctionalWorkFlow:
 
                 class Starter(ProcessStarter):
                     pattern = "started"
-                    args = [sys.executable, "-u", server_path, port]
+                    args = [sys.executable, server_path, port]
 
                 xprocess.ensure("server", Starter)
 
