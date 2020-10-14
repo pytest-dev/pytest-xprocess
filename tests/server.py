@@ -67,7 +67,7 @@ if __name__ == "__main__":
     # ignore sigterm for testing XProcessInfo.terminate
     # when processes fail to exit
     try:
-        if sys.argv[2].lower() == "true":
+        if sys.argv[2].lower() == "true" and sys.platform != "win32:":
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             # fork children that ignore SIGTERM
             server.fork_children(do_nothing, 2)

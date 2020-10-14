@@ -5,6 +5,10 @@ import pytest
 from conftest import Test
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="on windows SIGTERM is treated as an alias for kill()",
+)
 class TestProcessTermination(Test):
     """test termination of process and children"""
 
@@ -26,7 +30,6 @@ class TestProcessTermination(Test):
         self.start_server("started", proc_name, port)
         proc_info = self.get_info(proc_name)
         pid, proc_info.pid = proc_info.pid, None
-        print("**proc_info.pid: ", proc_info.pid)
         # call terminate through XProcessInfo instance
         # with pid=None to test edge case
         assert proc_info.terminate() == 0
