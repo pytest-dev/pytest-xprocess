@@ -31,23 +31,23 @@ class TestServer(socketserver.TCPServer):
         self.spam_blank_lines()
         self.spam_complex_strings()
         self.spam_non_ascii()
-        print("started\n")
-        sys.stdout.flush()
+        sys.stderr.write("started\n")
+        sys.stderr.flush()
 
     def spam_non_ascii(self):
         """non-ascii characters must be supported"""
         for _ in range(5):
-            print("Ê�æ�pP��çîöē�P��adåráøū")
+            sys.stderr.write("Ê�æ�pP��çîöē�P��adåráøū")
 
     def spam_complex_strings(self):
         """Special/control characters should not cause problems"""
         for i in range(5):
-            print("{} , % /.%,@%@._%%# #/%/ %\n".format(i))
+            sys.stderr.write("{} , % /.%,@%@._%%# #/%/ %\n".format(i))
 
     def spam_blank_lines(self):
         """Blank lines should be igored by xprocess"""
         for _ in range(100):
-            print("\n")
+            sys.stderr.write("\n")
 
     def fork_children(self, target, amount):
         """forks multiple children for testing process tree termination"""
