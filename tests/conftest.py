@@ -14,7 +14,7 @@ def xprocess_starter(xprocess, request):
         class Starter(ProcessStarter):
             pattern = start_pattern
             server_path = Path(__file__).parent.joinpath("server.py").absolute()
-            args = [sys.executable, "-u", server_path, port, ignore_sigterm]
+            args = [sys.executable, server_path, port, ignore_sigterm]
 
         logfile = xprocess.ensure(proc_name, Starter)
         return logfile

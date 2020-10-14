@@ -32,6 +32,7 @@ class TestServer(socketserver.TCPServer):
         self.spam_complex_strings()
         self.spam_non_ascii()
         print("started\n")
+        sys.stdout.flush()
 
     def spam_non_ascii(self):
         """non-ascii characters must be supported"""
