@@ -17,8 +17,12 @@ class TestHandler(socketserver.StreamRequestHandler):
             line = self.rfile.readline()
             if not line:
                 break
-            print("received: {}, request counter: {}\n".format(line, self.count))
-            self.request.sendall(line.upper())
+            if line == bytes("exit\n", "utf-8"):
+                # terminate itself
+                sys.exit()
+            else:
+                response = line.upper()
+            self.request.sendall(response)
             self.count += 1
 
 
@@ -27,24 +31,31 @@ class TestServer(socketserver.TCPServer):
 
     allow_reuse_address = True
 
-    def print_test_patterns(self):
-        self.spam_blank_lines()
-        self.spam_complex_strings()
-        self.spam_non_ascii()
+    def write_test_patterns(self):
+        self.write_blank_lines()
+        self.write_complex_strings()
+        self.write_non_ascii()
         sys.stderr.write("started\n")
+        self.write_long_output()
         sys.stderr.flush()
 
-    def spam_non_ascii(self):
+    def write_long_output(self):
+        """write past 50 lines matching limit for testing
+        missing/wrong/not found pattern scenarios"""
+        for _ in range(55):
+            sys.stderr.write("spam, bacon, eggs\n")
+
+    def write_non_ascii(self):
         """non-ascii characters must be supported"""
         for _ in range(5):
-            sys.stderr.write("Ê�æ�pP��çîöē�P��adåráøū")
+            sys.stderr.write("Ê�æ�pP��çîöē�P��adåráøū\n")
 
-    def spam_complex_strings(self):
+    def write_complex_strings(self):
         """Special/control characters should not cause problems"""
         for i in range(5):
             sys.stderr.write("{} , % /.%,@%@._%%# #/%/ %\n".format(i))
 
-    def spam_blank_lines(self):
+    def write_blank_lines(self):
         """Blank lines should be igored by xprocess"""
         for _ in range(100):
             sys.stderr.write("\n")
@@ -63,7 +74,7 @@ if __name__ == "__main__":
 
     HOST, PORT = "localhost", int(sys.argv[1])
     server = TestServer((HOST, PORT), TestHandler)
-    # for normal children
+    # fork normal children
     server.fork_children(do_nothing, 3)
     # ignore sigterm for testing XProcessInfo.terminate
     # when processes fail to exit
@@ -74,5 +85,5 @@ if __name__ == "__main__":
             server.fork_children(do_nothing, 2)
     except IndexError:
         pass
-    server.print_test_patterns()
+    server.write_test_patterns()
     server.serve_forever()
