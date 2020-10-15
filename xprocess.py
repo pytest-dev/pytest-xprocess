@@ -61,7 +61,7 @@ class XProcessInfo:
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
             if alive:  # pragma: no cover
                 return -1
-        except psutil.Error:
+        except (psutil.Error, ValueError):
             return -1
         return 1
 
