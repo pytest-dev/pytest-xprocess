@@ -1,3 +1,8 @@
+0.16.0 (UNRELEASED)
+-------------------
+
+- Make :meth:`XProcessInfo.isrunning` ignore zombie processes by default. Pass ``ignore_zombies=False`` to get the previous behavior, which was to consider zombie processes as running.
+
 0.15.0 (2020-10-03)
 -------------------
 
@@ -6,7 +11,6 @@
 - Fixed bug when non-ascii characters were written to stdout by external
   process
 - Removed deprecated :meth:`XProcessInfo.kill`
-- Make :meth:`XProcessInfo.isrunning` ignore zombie processes by default. Pass ``ignore_zombies=False`` to get the previous behavior, which was to consider zombie processes as running.
 
 0.14.0 (2020-09-24)
 -------------------
