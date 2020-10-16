@@ -80,6 +80,9 @@ def test_is_not_running_after_terminated_by_itself(xprocess):
     for _ in range(50):
         time.sleep(0.1)
         if not server_info.isrunning():
+            assert not server_info.isrunning(ignore_zombies=True)
+            if not sys.platform.startswith("win"):
+                assert server_info.isrunning(ignore_zombies=False)
             break
     else:
         server_info.terminate()
