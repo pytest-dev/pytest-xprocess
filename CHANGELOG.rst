@@ -1,3 +1,8 @@
+0.16.0 (UNRELEASED)
+-------------------
+
+- Make :meth:`XProcessInfo.isrunning` ignore zombie processes by default. Pass ``ignore_zombies=False`` to get the previous behavior, which was to consider zombie processes as running.
+
 0.15.0 (2020-10-03)
 -------------------
 

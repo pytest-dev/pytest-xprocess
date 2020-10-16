@@ -58,14 +58,24 @@ class XProcessInfo:
             return -1
         return 1
 
-    def isrunning(self):
+    def isrunning(self, ignore_zombies=True):
+        """Returns whether the process is running or not.
+
+        @param ignore_zombies: Treat zombie processes as terminated. Sometimes a
+                               process that terminates itself during test execution
+                               will become a zombie process during pytest's lifetime.
+
+        @return: ``True`` if the process is running, ``False`` if it is not.
+        """
         if self.pid is None:
             return False
         try:
             proc = psutil.Process(self.pid)
         except psutil.NoSuchProcess:
             return False
-        return proc.is_running()
+        return proc.is_running() and (
+            not ignore_zombies or proc.status() != psutil.STATUS_ZOMBIE
+        )
 
 
 class XProcess:

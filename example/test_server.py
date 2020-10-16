@@ -1,8 +1,10 @@
 import os
 import sys
+import time
 
 import psutil
 import py
+import pytest
 
 
 server_path = py.path.local(__file__).dirpath("server.py")
@@ -55,6 +57,38 @@ def test_server_env(xprocess):
     assert c == b"X"
 
 
+def test_is_running(xprocess):
+    assert xprocess.getinfo("server3").isrunning()
+    assert xprocess.getinfo("server2").isrunning()
+    assert xprocess.getinfo("server").isrunning()
+
+
+def test_is_not_running_after_terminated_by_itself(xprocess):
+    server_name = "server4"
+    xprocess.ensure(
+        server_name,
+        lambda cwd: ("started", [sys.executable, server_path, 6780, "--no-children"]),
+    )
+    import socket
+
+    sock = socket.socket()
+    sock.connect(("localhost", 6780))
+    sock.sendall(b"kill\n")
+    sock.recv(1)
+
+    server_info = xprocess.getinfo(server_name)
+    for _ in range(50):
+        time.sleep(0.1)
+        if not server_info.isrunning():
+            assert not server_info.isrunning(ignore_zombies=True)
+            if not sys.platform.startswith("win"):
+                assert server_info.isrunning(ignore_zombies=False)
+            break
+    else:
+        server_info.terminate()
+        pytest.fail("Server was not detected to be stopped.")
+
+
 def test_clean_shutdown(xprocess):
     proc_names = ["server", "server2", "server3"]
     all_children = [
@@ -70,6 +104,12 @@ def test_clean_shutdown(xprocess):
         assert not psutil.pid_exists(pid)
     for name in proc_names:
         assert not xprocess.getinfo(name).isrunning()
+
+
+def test_is_not_running_after_termination(xprocess):
+    assert not xprocess.getinfo("server3").isrunning()
+    assert not xprocess.getinfo("server2").isrunning()
+    assert not xprocess.getinfo("server").isrunning()
 
 
 def test_functional_work_flow(testdir):

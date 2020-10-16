@@ -23,6 +23,11 @@ class MainHandler(socketserver.StreamRequestHandler):
                 break
             sys.stderr.write("[%d] %r\n" % (self.count, line))
             sys.stderr.flush()
+            if line == b"kill\n":
+                sys.stderr.write("[%d] Terminating...\n" % (self.count))
+                sys.stderr.flush()
+                self.server._BaseServer__shutdown_request = True
+                break
             self.request.sendall(response)
             MainHandler.count += 1
 
@@ -33,10 +38,11 @@ def _do_nothing():
 
 
 if __name__ == "__main__":
-    # spawn children for testing proc tree termination
-    Process(target=_do_nothing).start()
-    Process(target=_do_nothing).start()
-    Process(target=_do_nothing).start()
+    if "--no-children" not in sys.argv:
+        # spawn children for testing proc tree termination
+        Process(target=_do_nothing).start()
+        Process(target=_do_nothing).start()
+        Process(target=_do_nothing).start()
 
     class MyServer(socketserver.TCPServer):
         allow_reuse_address = True
