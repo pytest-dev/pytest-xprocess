@@ -29,7 +29,8 @@ class TestProcessTermination(Test):
         # call terminate through XProcessInfo instance
         # with pid=None to test edge case
         assert proc_info.terminate() == 0
-        psutil.Process(pid).kill()  # clenup
+        proc_info.pid = pid
+        self.terminate(proc_name)
 
     @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2")])
     def test_terminate_only_parent(self, port, proc_name):
@@ -58,7 +59,7 @@ class TestProcessTermination(Test):
         # since terminate with sigterm will fail, set a lower
         # timeout before sending sigkill so tests won't take too long
         assert (
-            self.terminate(proc_name, timeout=5) == 1
+            self.terminate(proc_name, timeout=10) == 1
             or psutil.Process(pid).status() == psutil.STATUS_ZOMBIE
         )
 

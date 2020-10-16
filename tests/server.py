@@ -42,7 +42,7 @@ class TestServer(socketserver.TCPServer):
     def write_long_output(self):
         """write past 50 lines matching limit for testing
         missing/wrong/not found pattern scenarios"""
-        for _ in range(55):
+        for _ in range(50):
             sys.stderr.write("spam, bacon, eggs\n")
 
     def write_non_ascii(self):
@@ -63,7 +63,8 @@ class TestServer(socketserver.TCPServer):
     def fork_children(self, target, amount):
         """forks multiple children for testing process tree termination"""
         for _ in range(amount):
-            Process(target=target).start()
+            p = Process(target=target)
+            p.start()
 
 
 if __name__ == "__main__":
