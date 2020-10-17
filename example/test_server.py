@@ -63,30 +63,19 @@ def test_is_running(xprocess):
     assert xprocess.getinfo("server").isrunning()
 
 
-def test_is_not_running_after_terminated_by_itself(xprocess):
-    server_name = "server4"
-    xprocess.ensure(
-        server_name,
-        lambda cwd: ("started", [sys.executable, server_path, 6780, "--no-children"]),
-    )
-    import socket
+def test_is_not_running_after_terminated_by_itself(server_info_for_terminated_server):
+    server_info = server_info_for_terminated_server
+    assert not server_info.isrunning()
+    assert not server_info.isrunning(ignore_zombies=True)
 
-    sock = socket.socket()
-    sock.connect(("localhost", 6780))
-    sock.sendall(b"kill\n")
-    sock.recv(1)
 
-    server_info = xprocess.getinfo(server_name)
-    for _ in range(50):
-        time.sleep(0.1)
-        if not server_info.isrunning():
-            assert not server_info.isrunning(ignore_zombies=True)
-            if not sys.platform.startswith("win"):
-                assert server_info.isrunning(ignore_zombies=False)
-            break
-    else:
-        server_info.terminate()
-        pytest.fail("Server was not detected to be stopped.")
+@pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="Zombie processes are not present on Windows"
+)
+def test_is_not_running_after_terminated_by_itself(server_info_for_terminated_server):
+    server_info = server_info_for_terminated_server
+    assert not server_info.isrunning()
+    assert server_info.isrunning(ignore_zombies=False)
 
 
 def test_clean_shutdown(xprocess):
@@ -134,3 +123,30 @@ def test_functional_work_flow(testdir):
     result.stdout.fnmatch_lines("*LIVE*")
     result = testdir.runpytest("--xkill")
     result.stdout.fnmatch_lines("*TERMINATED*")
+
+
+@pytest.fixture(scope="module")
+def server_info_for_terminated_server(xprocess):
+    server_name = "server4"
+    server_port = 6780
+    xprocess.ensure(
+        server_name,
+        lambda cwd: (
+            "started",
+            [sys.executable, server_path, server_port, "--no-children"],
+        ),
+    )
+    import socket
+
+    sock = socket.socket()
+    sock.connect(("localhost", server_port))
+
+    try:
+        for _ in range(50):
+            sock.sendall(b"kill\n")
+            sock.recv(1)
+            time.sleep(0.1)
+    except BrokenPipeError:  # Server is closed, as expected
+        server_info = xprocess.getinfo(server_name)
+        yield server_info
+    server_info.terminate()
