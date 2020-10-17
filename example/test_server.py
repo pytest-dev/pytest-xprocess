@@ -73,7 +73,7 @@ def test_is_not_running_after_terminated_by_itself(server_info_for_terminated_se
     sys.platform.startswith("win"), reason="Zombie processes are not present on Windows"
 )
 def test_is_running_after_terminated_by_itself_when_not_ignoring_zombies(
-    server_info_for_terminated_server
+    server_info_for_terminated_server,
 ):
     server_info = server_info_for_terminated_server
     assert not server_info.isrunning()
@@ -148,7 +148,7 @@ def server_info_for_terminated_server(xprocess):
             sock.sendall(b"kill\n")
             sock.recv(1)
             time.sleep(0.1)
-    except BrokenPipeError:  # Server is closed, as expected
+    except (BrokenPipeError, ConnectionAbortedError):  # Server is terminated
         server_info = xprocess.getinfo(server_name)
         yield server_info
     server_info.terminate()
