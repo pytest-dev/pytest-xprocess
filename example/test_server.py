@@ -72,7 +72,9 @@ def test_is_not_running_after_terminated_by_itself(server_info_for_terminated_se
 @pytest.mark.skipif(
     sys.platform.startswith("win"), reason="Zombie processes are not present on Windows"
 )
-def test_is_not_running_after_terminated_by_itself(server_info_for_terminated_server):
+def test_is_running_after_terminated_by_itself_when_not_ignoring_zombies(
+    server_info_for_terminated_server
+):
     server_info = server_info_for_terminated_server
     assert not server_info.isrunning()
     assert server_info.isrunning(ignore_zombies=False)
