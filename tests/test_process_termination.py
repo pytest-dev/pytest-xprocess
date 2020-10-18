@@ -68,4 +68,8 @@ class TestProcessTermination(Test):
         proc_name = "server"
         self.start_server("started", proc_name, port)
         assert self.terminate(proc_name, timeout=-1) == -1
-        psutil.Process(self.get_info(proc_name).pid).terminate()
+        try:
+            # make sure hanging processes are not left behind
+            psutil.Process(self.get_info(proc_name).pid).terminate()
+        except psutil.NoSuchProcess:
+            pass
