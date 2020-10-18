@@ -19,7 +19,7 @@ class TestProcessTermination(Test):
         assert len(children) >= 1
         assert self.terminate(proc_name)
         for child in children:
-            assert not child.is_running()
+            assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
 
     @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2")])
     def test_terminate_no_pid(self, port, proc_name):
