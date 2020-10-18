@@ -75,14 +75,12 @@ if __name__ == "__main__":
 
     HOST, PORT = "localhost", int(sys.argv[1])
     server = TestServer((HOST, PORT), TestHandler)
-    if "--not-children" not in sys.argv:
-        server.fork_children(do_nothing, 3)
+    if "--ignore-sigterm" in sys.argv and sys.platform != "win32":
         # ignore sigterm for testing XProcessInfo.terminate
         # when processes fail to exit
-        if "--ignore-sigterm" in sys.argv and sys.platform != "win32":
-            signal.signal(signal.SIGTERM, signal.SIG_IGN)
-            # fork children that ignore SIGTERM
-            server.fork_children(do_nothing, 2)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    if "--not-children" not in sys.argv:
+        server.fork_children(do_nothing, 3)
 
     server.write_test_patterns()
     server.serve_forever()
