@@ -19,7 +19,7 @@ class TestHandler(socketserver.StreamRequestHandler):
                 break
             if line == bytes("exit\n", "utf-8"):
                 # terminate itself
-                sys.exit()
+                self.server._BaseServer__shutdown_request = True
             else:
                 response = line.upper()
             self.request.sendall(response)
@@ -75,16 +75,14 @@ if __name__ == "__main__":
 
     HOST, PORT = "localhost", int(sys.argv[1])
     server = TestServer((HOST, PORT), TestHandler)
-    # fork normal children
-    server.fork_children(do_nothing, 3)
-    # ignore sigterm for testing XProcessInfo.terminate
-    # when processes fail to exit
-    try:
-        if sys.argv[2].lower() == "true" and sys.platform != "win32:":
+    if "--not-children" not in sys.argv:
+        server.fork_children(do_nothing, 3)
+        # ignore sigterm for testing XProcessInfo.terminate
+        # when processes fail to exit
+        if "--ignore-sigterm" in sys.argv and sys.platform != "win32":
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             # fork children that ignore SIGTERM
             server.fork_children(do_nothing, 2)
-    except IndexError:
-        pass
+
     server.write_test_patterns()
     server.serve_forever()

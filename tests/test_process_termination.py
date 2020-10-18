@@ -54,7 +54,7 @@ class TestProcessTermination(Test):
     def test_sigkill_after_failed_sigterm(self, port, proc_name):
         # explicitly tell xprocess_starter fixture to make
         # server instance ignore SIGTERM
-        self.start_server("started", proc_name, port, ignore_sigterm=True)
+        self.start_server("started", proc_name, port, "--ignore-sigterm")
         pid = self.get_info(proc_name).pid
         # since terminate with sigterm will fail, set a lower
         # timeout before sending sigkill so tests won't take too long
