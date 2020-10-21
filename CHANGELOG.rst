@@ -6,7 +6,7 @@
   will consider the process as ready to answer queries. If :meth:`startup_check` is provided though, its return value will also be considered to determine if the process has been
   successfully started. If :meth:`startup_check` returns `True` after :attr:`ProcessStarter.pattern` has been matched, :meth:`XProcess.ensure` will return sucessfully. In contrast, if
   :meth:`startup_check` does not return `True` before timing out, :meth:`XProcess.ensure` will raise a `TimeoutError` exception.
-
+- Remove deprecated :meth:`xprocess.CompatStarter`
 
 0.16.0 (2020-10-29)
 -------------------
