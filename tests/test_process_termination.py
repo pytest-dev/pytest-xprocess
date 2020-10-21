@@ -15,7 +15,7 @@ class TestProcessTermination(Test):
         self.start_server("started", proc_name, port)
         proc_info = self.get_info(proc_name)
         assert proc_info.isrunning()
-        children = psutil.Process(proc_info.pid).children()
+        children = psutil.Process(proc_info.pid).children(recursive=True)
         assert len(children) >= 1
         assert self.terminate(proc_name)
         for child in children:

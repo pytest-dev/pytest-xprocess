@@ -27,11 +27,7 @@ def xprocess_terminate(xprocess):
     def _terminator(name, **kwargs):
         proc = xprocess.getinfo(name)
         if proc.isrunning():
-            print(
-                "process {} (PID {}) is running, terminating...\n".format(
-                    name, proc.pid
-                )
-            )
+            print("terminating process {} (PID {})...\n".format(name, proc.pid))
             return proc.terminate(**kwargs)
 
     return _terminator
