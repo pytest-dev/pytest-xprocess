@@ -59,5 +59,7 @@ if __name__ == "__main__":
     # non-ascii for encode testing
     sys.stderr.write("Ê�æ�pP��çîöē�P��adåráøū")
     sys.stderr.write("started\n")
+    for _ in range(100):
+        sys.stderr.write("finally started\n")
     sys.stderr.flush()
     mainserver.serve_forever()
