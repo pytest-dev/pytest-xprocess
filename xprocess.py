@@ -149,7 +149,12 @@ class XProcess:
             f.seek(0, 2)
         else:
             if not starter.wait(f):
-                raise RuntimeError("Could not start process %s" % name)
+                raise RuntimeError(
+                    "Could not start process {}, the specified "
+                    "log pattern was not found within {} lines.".format(
+                        name, starter.max_read_lines
+                    )
+                )
             self.log.debug("%s process startup detected", name)
         logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         logfiles[name] = f
@@ -192,6 +197,12 @@ class ProcessStarter:
     The environment in which to invoke the process.
     """
 
+    max_read_lines = 50
+    """
+    The maximum amount of lines of the log that will be read
+    before presuming the attached process dead.
+    """
+
     def __init__(self, control_dir, process):
         self.control_dir = control_dir
         self.process = process
@@ -212,7 +223,7 @@ class ProcessStarter:
     def filter_lines(self, lines):
         # only consider the first non-empty 50 lines
         non_empty_lines = (x for x in lines if x.strip())
-        return itertools.islice(non_empty_lines, 50)
+        return itertools.islice(non_empty_lines, self.max_read_lines)
 
     def log_line(self, line):
         self.process.log.debug(line)

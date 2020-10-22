@@ -77,23 +77,22 @@ started:
   new subprocess is invoked. To inherit the main test process
   environment, leave ``env`` set to the default (``None``).
 
-- stdout is redirected to a logfile, which is returned pointing to the
-  line right after the match
+- the first 50 lines of stdout is redirected to a logfile, which is
+  returned pointing to the line right after the match
 
 If the server is already running, simply the logfile is returned.
 
-To customize the startup behavior, override other methods of the
-ProcessStarter. For example, to extend the number of lines searched
-for the startup info:
+- to extend the number of lines searched prior to considering the external
+  process dead, the ``max_read_lines`` property can be set.
+
+This expandability can be seen here.
 
 .. code-block:: python
 
     class Starter(ProcessStarter):
         pattern = 'process started at .*'
         args = ['command', 'arg1']
-
-        def filter_lines(self, lines):
-            return itertools.islice(lines, 500)
+        max_read_lines = 500
 
 To override the wait behavior, override ``ProcessStarter.wait``.
 See the ``xprocess.ProcessStarter`` interface for more details.
