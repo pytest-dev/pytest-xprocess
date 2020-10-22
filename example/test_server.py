@@ -133,9 +133,11 @@ def test_functional_work_flow(testdir):
 def server_info_for_terminated_server(xprocess):
     server_name = "server4"
     server_port = 6780
+
     class Starter(ProcessStarter):
         pattern = "started"
         args = [sys.executable, server_path, server_port, "--no-children"]
+
     xprocess.ensure(server_name, Starter)
 
     import socket
@@ -153,13 +155,16 @@ def server_info_for_terminated_server(xprocess):
         yield server_info
     server_info.terminate()
 
+
 def test_startup_detection_max_read_lines(xprocess):
     class Starter(ProcessStarter):
         pattern = "finally started"
         args = [sys.executable, server_path, 6777]
         max_read_lines = 200
+
     xprocess.ensure("server", Starter)
     import socket
+
     sock = socket.socket()
     sock.connect(("localhost", 6777))
     sock.sendall(b"hello\n")
