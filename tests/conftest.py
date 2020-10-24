@@ -10,10 +10,13 @@ pytest_plugins = "pytester"
 
 @pytest.fixture
 def xprocess_starter(xprocess, request):
-    def _runner(start_pattern, proc_name, port, *test_args, restart=False):
+    def _runner(
+        start_pattern, proc_name, port, *test_args, read_lines=50, restart=False
+    ):
         class Starter(ProcessStarter):
             pattern = start_pattern
             server_path = Path(__file__).parent.joinpath("server.py").absolute()
+            max_read_lines = read_lines
             args = [sys.executable, server_path, port, *test_args]
 
         # return (pid, logfile)
