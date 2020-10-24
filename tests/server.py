@@ -10,8 +10,6 @@ class TestHandler(socketserver.StreamRequestHandler):
     The request handler class for the test server.
     """
 
-    count = 0
-
     def handle(self):
         while True:
             line = self.rfile.readline()
@@ -23,7 +21,6 @@ class TestHandler(socketserver.StreamRequestHandler):
             else:
                 response = line.upper()
             self.request.sendall(response)
-            self.count += 1
 
 
 class TestServer(socketserver.TCPServer):
@@ -37,6 +34,7 @@ class TestServer(socketserver.TCPServer):
         self.write_non_ascii()
         sys.stderr.write("started\n")
         self.write_long_output()
+        sys.stderr.write("finally started\n")
         sys.stderr.flush()
 
     def write_long_output(self):
@@ -79,7 +77,7 @@ if __name__ == "__main__":
         # ignore sigterm for testing XProcessInfo.terminate
         # when processes fail to exit
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
-    if "--not-children" not in sys.argv:
+    if "--no-children" not in sys.argv:
         server.fork_children(do_nothing, 3)
 
     server.write_test_patterns()
