@@ -1,4 +1,5 @@
 import os
+import socket
 import sys
 import time
 
@@ -19,8 +20,6 @@ def test_server(xprocess):
     xprocess.ensure(
         "server", lambda cwd: (pattern, [sys.executable, server_path, 6777])
     )
-    import socket
-
     sock = socket.socket()
     sock.connect(("localhost", 6777))
     sock.sendall(b"hello\n")
@@ -32,8 +31,6 @@ def test_server2(xprocess):
     xprocess.ensure(
         "server2", lambda cwd: ("started", [sys.executable, server_path, 6778])
     )
-    import socket
-
     sock = socket.socket()
     sock.connect(("localhost", 6778))
     sock.sendall(b"world\n")
@@ -50,8 +47,6 @@ def test_server_env(xprocess):
         "server3",
         lambda cwd: (pattern, [sys.executable, server_path, 6779], env),
     )
-    import socket
-
     sock = socket.socket()
     sock.connect(("localhost", 6779))
     sock.sendall(b"hello\n")
@@ -139,18 +134,18 @@ def server_info_for_terminated_server(xprocess):
         args = [sys.executable, server_path, server_port, "--no-children"]
 
     xprocess.ensure(server_name, Starter)
-
-    import socket
-
     sock = socket.socket()
     sock.connect(("localhost", server_port))
-
     try:
         for _ in range(50):
             sock.sendall(b"kill\n")
             sock.recv(1)
             time.sleep(0.1)
-    except (BrokenPipeError, ConnectionAbortedError):  # Server is terminated
+    except (
+        BrokenPipeError,
+        ConnectionAbortedError,
+        ConnectionResetError,
+    ):  # Server is terminated
         server_info = xprocess.getinfo(server_name)
         yield server_info
     server_info.terminate()
@@ -163,11 +158,34 @@ def test_startup_detection_max_read_lines(xprocess):
         max_read_lines = 200
 
     xprocess.ensure("server", Starter)
-    import socket
-
     sock = socket.socket()
     sock.connect(("localhost", 6777))
     sock.sendall(b"hello\n")
     c = sock.recv(1)
     assert c == b"1"
     xprocess.getinfo("server").terminate()
+
+
+def test_timeout(xprocess):
+    class Starter(ProcessStarter):
+        pattern = "will not match"
+        args = [sys.executable, server_path, 6777, "--no-children"]
+        max_read_lines = 500
+        timeout = 15
+
+    with pytest.raises(TimeoutError):
+        xprocess.ensure("server", Starter)
+    # kill hanging server instance
+    sock = socket.socket()
+    sock.connect(("localhost", 6777))
+    try:
+        for _ in range(10):
+            sock.sendall(b"kill\n")
+            sock.recv(1)
+            time.sleep(0.1)
+    except (
+        BrokenPipeError,
+        ConnectionAbortedError,
+        ConnectionResetError,
+    ):  # Server is terminated
+        pass
