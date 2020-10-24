@@ -14,12 +14,13 @@ class TestFunctionalWorkFlow:
             from xprocess import ProcessStarter
 
             def test_server(request, xprocess):
-                port = 6700
+                port = 6776
                 data = "spam\\n"
                 server_path = %r
 
                 class Starter(ProcessStarter):
                     pattern = "started"
+                    max_read_lines = 200
                     args = [sys.executable, server_path, port]
 
                 xprocess.ensure("server", Starter)
