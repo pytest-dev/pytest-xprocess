@@ -34,16 +34,25 @@ class TestProcessInitialization(Test):
         assert self.start_server(pattern, proc_name, port, restart=False) == info
         self.terminate(proc_name)
 
+    def test_startup_detection_max_read_lines(self):
+        port = 6777
+        data = "bacon\n"
+        proc_name = "server"
+        pattern = "finally started"
+        self.start_server(pattern, proc_name, port, read_lines=62)
+        self.request_response_cycle(port, data)
+        self.terminate(proc_name)
+
     def test_runtime_error_on_start_fail(self):
         port = 6777
-        patter = "I will not be matched!"
+        pattern = "I will not be matched!"
         proc_name = "server"
         with pytest.raises(RuntimeError):
             self.start_server(
-                patter,
+                pattern,
                 proc_name,
                 port,
-                "--not-children",
+                "--no-children",
                 "--ignore-sigterm",
                 restart=False,
             )
