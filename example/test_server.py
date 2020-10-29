@@ -171,7 +171,7 @@ def test_timeout(xprocess):
         pattern = "will not match"
         args = [sys.executable, server_path, 6777, "--no-children"]
         max_read_lines = 500
-        line_wait_timeout = 2
+        timeout = 2
 
     with pytest.raises(TimeoutError):
         xprocess.ensure("server", Starter)

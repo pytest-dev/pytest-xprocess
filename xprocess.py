@@ -205,7 +205,7 @@ class ProcessStarter:
     before presuming the attached process dead.
     """
 
-    line_wait_timeout = 120
+    timeout = 120
     """The maximum time ProcessStarter.wait will hang waiting for a new
     line when trying to match pattern before raising TimeoutError"""
 
@@ -240,9 +240,9 @@ class ProcessStarter:
 
     def get_lines(self, log_file):
         """Read and yield one line at a time from log_file. Will raise
-        TimeoutError if pattern is not matched before self.line_wait_timeout
+        TimeoutError if pattern is not matched before self.timeout
         seconds"""
-        max_time = datetime.now() + timedelta(seconds=self.line_wait_timeout)
+        max_time = datetime.now() + timedelta(seconds=self.timeout)
         while True:
             line = log_file.readline()
             if not line:
@@ -251,7 +251,7 @@ class ProcessStarter:
                 raise TimeoutError(
                     "The provided start pattern {} could not be matched \
                     within the specified time interval of {} seconds".format(
-                        self.pattern, self.line_wait_timeout
+                        self.pattern, self.timeout
                     )
                 )
             yield line
