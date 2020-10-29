@@ -5,6 +5,8 @@ import os
 import signal
 import sys
 import warnings
+from datetime import datetime
+from datetime import timedelta
 
 import psutil
 from py import std
@@ -188,7 +190,7 @@ class XProcess:
 
 class ProcessStarter:
     """
-    Describes the characteristics of a process to start, waiting
+    Describes the characteristics of a process to start and, waiting
     for a process to achieve a started state.
     """
 
@@ -203,6 +205,10 @@ class ProcessStarter:
     before presuming the attached process dead.
     """
 
+    timeout = 120
+    """The maximum time ProcessStarter.wait will hang waiting for a new
+    line when trying to match pattern before raising TimeoutError"""
+
     def __init__(self, control_dir, process):
         self.control_dir = control_dir
         self.process = process
@@ -210,30 +216,44 @@ class ProcessStarter:
     @abc.abstractproperty
     def args(self):
         "The args to start the process"
+        raise NotImplementedError
 
     @abc.abstractproperty
     def pattern(self):
         "The pattern to match when the process has started"
+        raise NotImplementedError
 
     def wait(self, log_file):
-        "Wait until the process is ready."
+        "Wait until the pattern is mached"
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
         return any(std.re.search(self.pattern, line) for line in lines)
 
     def filter_lines(self, lines):
-        # only consider the first non-empty 50 lines
+        """fetch first <max_read_lines>, ignoring blank lines"""
         non_empty_lines = (x for x in lines if x.strip())
         return itertools.islice(non_empty_lines, self.max_read_lines)
 
     def log_line(self, line):
+        """Write line to process log file"""
         self.process.log.debug(line)
         return line
 
     def get_lines(self, log_file):
+        """Read and yield one line at a time from log_file. Will raise
+        TimeoutError if pattern is not matched before self.timeout
+        seconds"""
+        max_time = datetime.now() + timedelta(seconds=self.timeout)
         while True:
             line = log_file.readline()
             if not line:
                 std.time.sleep(0.1)
+            if datetime.now() > max_time:
+                raise TimeoutError(
+                    "The provided start pattern {} could not be matched \
+                    within the specified time interval of {} seconds".format(
+                        self.pattern, self.timeout
+                    )
+                )
             yield line
 
 
