@@ -5,6 +5,8 @@ import os
 import signal
 import sys
 import warnings
+from datetime import datetime
+from datetime import timedelta
 
 import psutil
 from py import std
@@ -238,25 +240,20 @@ class ProcessStarter:
 
     def get_lines(self, log_file):
         """Read and yield one line at a time from log_file. Will raise
-        TimeoutError if a line read hangs for more than self.line_wait_timeout
+        TimeoutError if pattern is not matched before self.line_wait_timeout
         seconds"""
-        step_counter = max_wait_steps = int(self.line_wait_timeout / 0.1)
+        max_time = datetime.now() + timedelta(seconds=self.line_wait_timeout)
         while True:
-            print("** step counter: ", step_counter)
             line = log_file.readline()
             if not line:
-                step_counter -= 1
                 std.time.sleep(0.1)
-                if step_counter <= 0:
-                    raise TimeoutError(
-                        "The provided start pattern {} could not be matched \
-                        within the specified time interval of {} seconds".format(
-                            self.pattern, self.line_wait_timeout
-                        )
+            if datetime.now() > max_time:
+                raise TimeoutError(
+                    "The provided start pattern {} could not be matched \
+                    within the specified time interval of {} seconds".format(
+                        self.pattern, self.line_wait_timeout
                     )
-            else:
-                # reset counter
-                step_counter = max_wait_steps
+                )
             yield line
 
 
