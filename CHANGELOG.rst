@@ -1,4 +1,4 @@
-0.16.0 (UNRELEASED)
+0.16.0 (2020-10-29)
 -------------------
 
 - :class:`ProcessStarter` now has a new `timeout` class variable optionaly overridden to define the maximum time :meth:`xprocess.ensure` should wait for process output when trying to match :attr:`ProcessStarter.pattern`
