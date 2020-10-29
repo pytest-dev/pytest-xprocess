@@ -14,6 +14,7 @@ pytest-xprocess
 `pytest <https://docs.pytest.org/en/latest>`_ plugin for managing processes
 across test runs.
 
+
 Setting Up
 ----------
 
@@ -50,13 +51,28 @@ uses ``xprocess`` internally:
     @pytest.fixture
     def myserver(xprocess):
         class Starter(ProcessStarter):
+            # startup pattern
             pattern = "PATTERN"
+
+            # command to start process
             args = ['command', 'arg1', 'arg2']
 
+            # max startup waiting time
+            # optional, defaults to 30 seconds
+            timeout = 45
+
+            # max lines read from stdout when matching pattern
+            # optional, defaults to 100 lines
+            max_read_lines = 100
+
+        # ensure process is running and return its logfile
         logfile = xprocess.ensure("myserver", Starter)
+
         conn = # create a connection or url/port info to the server
         yield conn
-        xprocess.getinfo("myserver").terminate() # clean up afterwards
+
+        # clean up process and its children afterwards
+        xprocess.getinfo("myserver").terminate()
 
 The ``xprocess.ensure`` method takes the name of an external process and will
 make sure it is running during your testing phase. Also, you are not restricted
@@ -67,41 +83,38 @@ The ``Starter`` is a subclass that gets initialized with the working
 directory created for this process.  If the server has not yet been
 started:
 
-- ``args`` are used to invoke a new subprocess.
-
 - ``pattern`` is waited for in the logfile before returning.
   It should thus match a state of your server where it is ready to
   answer queries.
 
-- ``env`` may be defined to customize the environment in which the
+- ``args`` is a list of arguments, used to invoke a new subprocess.
+
+- ``timeout`` may be used to specify the maximum time in seconds to wait for
+  process startup.
+
+- ``max_read_lines`` may be be used to extend the number of lines searched
+  for ``pattern`` prior to considering the external process dead. By default,
+  the first 50 lines of stdout are redirected to a logfile, which is returned
+  pointing to the line right after the ``pattern`` match.
+
+- Adicionally, ``env`` may be defined to customize the environment in which the
   new subprocess is invoked. To inherit the main test process
   environment, leave ``env`` set to the default (``None``).
 
-- the first 50 lines of stdout is redirected to a logfile, which is
-  returned pointing to the line right after the match
-
 If the server is already running, simply the logfile is returned.
 
-- to extend the number of lines searched prior to considering the external
-  process dead, the ``max_read_lines`` property can be set.
 
-This expandability can be seen here.
-
-.. code-block:: python
-
-    class Starter(ProcessStarter):
-        pattern = 'process started at .*'
-        args = ['command', 'arg1']
-        max_read_lines = 500
+Overriding Wait Behavior
+------------------------
 
 To override the wait behavior, override ``ProcessStarter.wait``.
 See the ``xprocess.ProcessStarter`` interface for more details.
 
-Note that the plugin needs to persist the process ID and logfile
-information.  It does this in a sub directory of the directory
-which contains a ``pytest.ini`` or ``setup.py`` file.
+Note that the plugin uses a subdirectory in ``.pytest_cache`` to persist the
+process ID and logfile information.
 
-An important note regarding stream buffering
+
+An Important Note Regarding Stream Buffering
 --------------------------------------------
 
 There have been reports of issues with test suites hanging when users attempt
