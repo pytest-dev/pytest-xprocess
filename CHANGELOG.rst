@@ -1,7 +1,7 @@
 0.16.0 (2020-10-29)
 -------------------
 
-- :class:`ProcessStarter` now has a new `timeout` class variable optionaly overridden to define the maximum time :meth:`xprocess.ensure` should wait for process output when trying to match :attr:`ProcessStarter.pattern`
+- :class:`ProcessStarter` now has a new `timeout` class variable optionaly overridden to define the maximum time :meth:`xprocess.ensure` should wait for process output when trying to match :attr:`ProcessStarter.pattern`. Defaults to 120 seconds.
 - The number of lines in the process logfile watched for :attr:`ProcessStarter.pattern` is now configurable and can be changed by setting :attr:`ProcessStarter.max_read_lines` to the desired value. Defaults to 50 lines.
 - Make :meth:`XProcessInfo.isrunning` ignore zombie processes by default. Pass ``ignore_zombies=False`` to get the previous behavior, which was to consider zombie processes as running.
 
