@@ -58,7 +58,7 @@ uses ``xprocess`` internally:
             args = ['command', 'arg1', 'arg2']
 
             # max startup waiting time
-            # optional, defaults to 30 seconds
+            # optional, defaults to 120 seconds
             timeout = 45
 
             # max lines read from stdout when matching pattern
