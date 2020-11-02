@@ -71,7 +71,7 @@ uses ``xprocess`` internally:
         conn = # create a connection or url/port info to the server
         yield conn
 
-        # clean up process and its children afterwards
+        # clean up whole process tree afterwards
         xprocess.getinfo("myserver").terminate()
 
 The ``xprocess.ensure`` method takes the name of an external process and will
@@ -79,9 +79,12 @@ make sure it is running during your testing phase. Also, you are not restricted
 to having a single external process at a time, ``xprocess`` can be used to handle
 multiple diferent processes or several instances of the same process.
 
-The ``Starter`` is a subclass that gets initialized with the working
-directory created for this process.  If the server has not yet been
-started:
+
+Starter Class
+-------------
+
+Your ``Starter`` must be a subclass of ``ProcessStarter`` where the required
+information to start a process instance will be provided:
 
 - ``pattern`` is waited for in the logfile before returning.
   It should thus match a state of your server where it is ready to
@@ -101,7 +104,7 @@ started:
   new subprocess is invoked. To inherit the main test process
   environment, leave ``env`` set to the default (``None``).
 
-If the server is already running, simply the logfile is returned.
+If the process is already running, simply the logfile is returned.
 
 
 Overriding Wait Behavior
