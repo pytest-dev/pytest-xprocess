@@ -1,10 +1,11 @@
-import abc
 import functools
 import itertools
 import os
 import signal
 import sys
 import warnings
+from abc import ABC
+from abc import abstractmethod
 from datetime import datetime
 from datetime import timedelta
 
@@ -13,6 +14,10 @@ from py import std
 
 
 class XProcessInfo:
+    """Holds Information of an active process instance represented by
+    a XProcess Object and offers recursive termination functionality of
+    said process tree."""
+
     def __init__(self, path, name):
         self.name = name
         self.controldir = path.ensure(name, dir=1)
@@ -36,8 +41,7 @@ class XProcessInfo:
         return codes:
             0   no work to do
             1   terminated
-            -1  failed to terminate
-        """
+            -1  failed to terminate"""
         if not self.pid:
             return 0
         try:
@@ -67,8 +71,7 @@ class XProcessInfo:
                                process that terminates itself during test execution
                                will become a zombie process during pytest's lifetime.
 
-        @return: ``True`` if the process is running, ``False`` if it is not.
-        """
+        @return: ``True`` if the process is running, ``False`` if it is not."""
         if self.pid is None:
             return False
         try:
@@ -81,6 +84,10 @@ class XProcessInfo:
 
 
 class XProcess:
+    """Main xprocess class. Represents a running process instance for which
+    a set of actions is offered, such as process startup, command line actions
+    and information fetching."""
+
     def __init__(self, config, rootdir, log=None):
         self.config = config
         self.rootdir = rootdir
@@ -95,11 +102,11 @@ class XProcess:
         self.log = log or Log()
 
     def getinfo(self, name):
-        """ return Process Info for the given external process. """
+        """Return Process Info for the given external process."""
         return XProcessInfo(self.rootdir, name)
 
     def ensure(self, name, preparefunc, restart=False):
-        """returns (PID, logfile) from a newly started or already
+        """Returns (PID, logfile) from a newly started or already
             running process.
 
         @param name: name of the external process, used for caching info
@@ -112,8 +119,7 @@ class XProcess:
 
         @return: (PID, logfile) logfile will be seeked to the end if the
                  server was running, otherwise seeked to the line after
-                 where the waitpattern matched.
-        """
+                 where the waitpattern matched."""
         from subprocess import Popen, STDOUT
 
         info = self.getinfo(name)
@@ -188,60 +194,57 @@ class XProcess:
         return 0
 
 
-class ProcessStarter:
-    """
-    Describes the characteristics of a process to start and, waiting
+class ProcessStarter(ABC):
+    """Describes the characteristics of a process to start and, waiting
     for a process to achieve a started state.
-    """
+
+    @cvar env: The environment in which to invoke the process.
+
+    @cvar timeout: The maximum time ProcessStarter.wait will hang waiting for a new
+             line when trying to match pattern before raising TimeoutError.
+
+    @cvar max_read_lines: The maximum amount of lines of the log that will be read
+                    before presuming the attached process dead."""
 
     env = None
-    """
-    The environment in which to invoke the process.
-    """
-
-    max_read_lines = 50
-    """
-    The maximum amount of lines of the log that will be read
-    before presuming the attached process dead.
-    """
-
     timeout = 120
-    """The maximum time ProcessStarter.wait will hang waiting for a new
-    line when trying to match pattern before raising TimeoutError"""
+    max_read_lines = 50
 
     def __init__(self, control_dir, process):
         self.control_dir = control_dir
         self.process = process
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def args(self):
-        "The args to start the process"
+        "The args to start the process."
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def pattern(self):
-        "The pattern to match when the process has started"
+        "The pattern to match when the process has started."
         raise NotImplementedError
 
     def wait(self, log_file):
-        "Wait until the pattern is mached"
+        "Wait until the pattern is mached."
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
         return any(std.re.search(self.pattern, line) for line in lines)
 
     def filter_lines(self, lines):
-        """fetch first <max_read_lines>, ignoring blank lines"""
+        """fetch first <max_read_lines>, ignoring blank lines."""
         non_empty_lines = (x for x in lines if x.strip())
         return itertools.islice(non_empty_lines, self.max_read_lines)
 
     def log_line(self, line):
-        """Write line to process log file"""
+        """Write line to process log file."""
         self.process.log.debug(line)
         return line
 
     def get_lines(self, log_file):
         """Read and yield one line at a time from log_file. Will raise
         TimeoutError if pattern is not matched before self.timeout
-        seconds"""
+        seconds."""
         max_time = datetime.now() + timedelta(seconds=self.timeout)
         while True:
             line = log_file.readline()
@@ -258,10 +261,8 @@ class ProcessStarter:
 
 
 class CompatStarter(ProcessStarter):
-    """
-    A compatibility ProcessStarter to handle legacy preparefunc
-    and warn of the deprecation.
-    """
+    """A compatibility ProcessStarter to handle legacy preparefunc
+    and warn of the deprecation."""
 
     # Define properties to satisfy the abstract property, though
     # they will be overridden at the instance.
@@ -273,10 +274,8 @@ class CompatStarter(ProcessStarter):
         super().__init__(control_dir, process)
 
     def prep(self, wait, args, env=None):
-        """
-        Given the return value of a preparefunc, prepare this
-        CompatStarter.
-        """
+        """Given the return value of a preparefunc, prepare this
+        CompatStarter."""
         self.pattern = wait
         self.env = env
         self.args = args
@@ -287,10 +286,8 @@ class CompatStarter(ProcessStarter):
 
     @classmethod
     def wrap(cls, starter_cls):
-        """
-        If starter_cls is not a ProcessStarter, assume it's the legacy
-        preparefunc and return it bound to a CompatStarter.
-        """
+        """If starter_cls is not a ProcessStarter, assume it's the legacy
+        preparefunc and return it bound to a CompatStarter."""
         if isinstance(starter_cls, type) and issubclass(starter_cls, ProcessStarter):
             return starter_cls
         depr_msg = "Pass a ProcessStarter for preparefunc"
