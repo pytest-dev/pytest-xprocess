@@ -34,6 +34,6 @@ class TestStartupTimeout(Test):
                 port,
                 "--no-children",
                 read_lines=500,
-                start_timeout=1,
+                start_timeout=2,
             )
         self.cleanup_server_instance(port)

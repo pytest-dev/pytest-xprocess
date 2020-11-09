@@ -65,7 +65,7 @@ class TestProcessTermination(Test):
         # since terminate with sigterm will fail, set a lower
         # timeout before sending sigkill so tests won't take too long
         assert (
-            self.terminate(proc_name, timeout=1) == 1
+            self.terminate(proc_name, timeout=2) == 1
             or psutil.Process(pid).status() == psutil.STATUS_ZOMBIE
         )
 
