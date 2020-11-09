@@ -216,14 +216,12 @@ class ProcessStarter(ABC):
     @property
     @abstractmethod
     def args(self):
-        """The args to start the process."""
-        raise NotImplementedError
+        "The args to start the process."
 
     @property
     @abstractmethod
     def pattern(self):
-        """The pattern to be matched when process is starting."""
-        raise NotImplementedError
+        "The pattern to match when the process has started."
 
     def startup_check(self):
         """Used to assert process responsiveness after pattern match"""

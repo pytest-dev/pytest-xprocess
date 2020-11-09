@@ -38,8 +38,8 @@ class TestServer(socketserver.TCPServer):
         sys.stderr.flush()
 
     def write_long_output(self):
-        """write past 50 lines matching limit for testing
-        missing/wrong/not found pattern scenarios"""
+        """write several lines to test pattern matching
+        with process with a lot of output"""
         for _ in range(50):
             sys.stderr.write("spam, bacon, eggs\n")
 

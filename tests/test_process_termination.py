@@ -9,7 +9,7 @@ class TestProcessTermination(Test):
     """test termination of process and children"""
 
     @pytest.mark.parametrize(
-        "port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3"), (6780, "s4")]
+        "port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")]
     )
     def test_clean_shutdown(self, port, proc_name):
         self.start_server("started", proc_name, port)
@@ -21,7 +21,9 @@ class TestProcessTermination(Test):
         for child in children:
             assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
 
-    @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2")])
+    @pytest.mark.parametrize(
+        "port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")]
+    )
     def test_terminate_no_pid(self, port, proc_name):
         self.start_server("started", proc_name, port)
         proc_info = self.get_info(proc_name)
@@ -32,7 +34,9 @@ class TestProcessTermination(Test):
         proc_info.pid = pid
         self.terminate(proc_name)
 
-    @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2")])
+    @pytest.mark.parametrize(
+        "port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")]
+    )
     def test_terminate_only_parent(self, port, proc_name):
         self.start_server("started", proc_name, port)
         proc_info = self.get_info(proc_name)
@@ -50,7 +54,9 @@ class TestProcessTermination(Test):
         sys.platform == "win32",
         reason="on windows SIGTERM is treated as an alias for kill()",
     )
-    @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2")])
+    @pytest.mark.parametrize(
+        "port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")]
+    )
     def test_sigkill_after_failed_sigterm(self, port, proc_name):
         # explicitly tell xprocess_starter fixture to make
         # server instance ignore SIGTERM
@@ -59,13 +65,14 @@ class TestProcessTermination(Test):
         # since terminate with sigterm will fail, set a lower
         # timeout before sending sigkill so tests won't take too long
         assert (
-            self.terminate(proc_name, timeout=10) == 1
+            self.terminate(proc_name, timeout=1) == 1
             or psutil.Process(pid).status() == psutil.STATUS_ZOMBIE
         )
 
-    def test_return_value_on_failure(self):
-        port = 6777
-        proc_name = "server"
+    @pytest.mark.parametrize(
+        "port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")]
+    )
+    def test_return_value_on_failure(self, port, proc_name):
         self.start_server("started", proc_name, port)
         assert self.terminate(proc_name, timeout=-1) == -1
         try:
