@@ -189,3 +189,37 @@ def test_timeout(xprocess):
         ConnectionResetError,
     ):  # Server is terminated
         pass
+
+
+def test_callback_success(xprocess):
+    class Starter(ProcessStarter):
+        pattern = "started"
+        args = [sys.executable, server_path, 6777, "--no-children"]
+
+        def startup_callback(self):
+            sock = socket.socket()
+            sock.connect(("localhost", 6777))
+            sock.sendall(b"hello\n")
+            c = sock.recv(1)
+            return c == b"1"
+
+    xprocess.ensure("server", Starter)
+    assert xprocess.getinfo("server").isrunning()
+    xprocess.getinfo("server").terminate()
+
+
+def test_callback_fail(xprocess):
+    class Starter(ProcessStarter):
+        pattern = "started"
+        args = [sys.executable, server_path, 6777, "--no-children"]
+
+        def startup_callback(self):
+            sock = socket.socket()
+            sock.connect(("localhost", 6777))
+            sock.sendall(b"hello\n")
+            c = sock.recv(1)
+            return c == b"wrong"
+
+    with pytest.raises(RuntimeError):
+        xprocess.ensure("server", Starter)
+    xprocess.getinfo("server").terminate()
