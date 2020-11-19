@@ -14,7 +14,7 @@ from py import std
 
 
 class XProcessInfo:
-    """Holds Information of an active process instance represented by
+    """Holds information of an active process instance represented by
     a XProcess Object and offers recursive termination functionality of
     said process tree."""
 
@@ -157,6 +157,7 @@ class XProcess:
             f.seek(0, 2)
         else:
             if not starter.wait(f):
+                # TODO: update error message for callback
                 raise RuntimeError(
                     "Could not start process {}, the specified "
                     "log pattern was not found within {} lines.".format(
@@ -226,10 +227,15 @@ class ProcessStarter(ABC):
         "The pattern to match when the process has started."
         raise NotImplementedError
 
+    def startup_callback(self):
+        "Used to assert process responsiveness after pattern match"
+        return True
+
     def wait(self, log_file):
-        "Wait until the pattern is mached."
+        "Wait until the pattern is mached and invoke callback."
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
-        return any(std.re.search(self.pattern, line) for line in lines)
+        has_match = any(std.re.search(self.pattern, line) for line in lines)
+        return has_match and self.startup_callback()
 
     def filter_lines(self, lines):
         """fetch first <max_read_lines>, ignoring blank lines."""
