@@ -36,10 +36,39 @@ Additionally, there are two new command line options::
 
 
 ``xprocess`` fixture usage
------------------------------
+--------------------------
 
-You typically define a project-specific fixture which
-uses ``xprocess`` internally:
+You typically define a project-specific fixture which uses ``xprocess``
+internally. Following are two examples:
+
+**Minimal reference fixture**
+
+.. code-block:: python
+
+    # content of conftest.py
+
+    import pytest
+    from xprocess import ProcessStarter
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # startup pattern
+            pattern = "PATTERN"
+
+            # command to start process
+            args = ['command', 'arg1', 'arg2']
+
+        # ensure process is running and return its logfile
+        logfile = xprocess.ensure("myserver", Starter)
+
+        conn = # create a connection or url/port info to the server
+        yield conn
+
+        # clean up whole process tree afterwards
+        xprocess.getinfo("myserver").terminate()
+
+**Complete reference fixture**
 
 .. code-block:: python
 
@@ -62,8 +91,25 @@ uses ``xprocess`` internally:
             timeout = 45
 
             # max lines read from stdout when matching pattern
-            # optional, defaults to 100 lines
+            # optional, defaults to 50 lines
             max_read_lines = 100
+
+            def startup_callback(self):
+                """
+                Optional callback used to check process responsiveness
+                after the provided pattern has been matched. Returned
+                value must be either True or False, where:
+
+                True: Process has been sucessfuly started and is ready
+                      to answer queries.
+
+                False: Callback failed during process startup, RuntimeError
+                       exception will be raised.
+                """
+                sock = socket.socket()
+                sock.connect(("localhost", 6777))
+                sock.sendall(b"testing connection\n")
+                return sock.recv(1) == "connection ok!"
 
         # ensure process is running and return its logfile
         logfile = xprocess.ensure("myserver", Starter)
@@ -100,6 +146,18 @@ information to start a process instance will be provided:
   the first 50 lines of stdout are redirected to a logfile, which is returned
   pointing to the line right after the ``pattern`` match.
 
+- ``startup_callback`` when provided will be called upon to check process
+  responsiveness after ``ProcessStarter.pattern`` is matched. By default,
+  ``XProcess.ensure`` will attempt to match ProcessStarter.pattern when
+  starting a process, if matched, xprocess will consider the process as ready
+  to answer querries. If ``startup_callback`` is provided though, its return
+  value will also be considered to determine if the process has been
+  properly started. If ``startup_callback`` returns True after
+  ``ProcessStarter.pattern`` has been matched, ``XProcess.ensure`` will return
+  sucessfully. In contrast, if ``startup_callback`` returns False after
+  ``ProcessStarter.pattern`` has been matched, ``XProcess.ensure`` will raise a
+  RuntimeError exception.
+
 - Adicionally, ``env`` may be defined to customize the environment in which the
   new subprocess is invoked. To inherit the main test process
   environment, leave ``env`` set to the default (``None``).
@@ -110,11 +168,10 @@ If the process is already running, simply the logfile is returned.
 Overriding Wait Behavior
 ------------------------
 
-To override the wait behavior, override ``ProcessStarter.wait``.
-See the ``xprocess.ProcessStarter`` interface for more details.
-
-Note that the plugin uses a subdirectory in ``.pytest_cache`` to persist the
-process ID and logfile information.
+To override the wait behavior, override ``ProcessStarter.wait``. See the
+``xprocess.ProcessStarter`` interface for more details. Note that the
+plugin uses a subdirectory in ``.pytest_cache`` to persist the process ID
+and logfile information.
 
 
 An Important Note Regarding Stream Buffering
