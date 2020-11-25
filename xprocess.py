@@ -8,6 +8,7 @@ from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
 from datetime import timedelta
+from time import sleep
 
 import psutil
 from py import std
@@ -235,6 +236,7 @@ class ProcessStarter(ABC):
         callback funtion. Will raise TimeoutError if self.callback does not
         return True before self.timeout seconds"""
         while True:
+            sleep(0.1)
             if self.startup_check():
                 return True
             if datetime.now() > self._max_time:
