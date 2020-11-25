@@ -196,7 +196,7 @@ def test_callback_success(xprocess):
         pattern = "started"
         args = [sys.executable, server_path, 6777, "--no-children"]
 
-        def startup_callback(self):
+        def startup_check(self):
             sock = socket.socket()
             sock.connect(("localhost", 6777))
             sock.sendall(b"hello\n")
@@ -214,7 +214,7 @@ def test_callback_fail(xprocess):
         pattern = "started"
         args = [sys.executable, server_path, 6777, "--no-children"]
 
-        def startup_callback(self):
+        def startup_check(self):
             sock = socket.socket()
             sock.connect(("localhost", 6777))
             sock.sendall(b"hello\n")

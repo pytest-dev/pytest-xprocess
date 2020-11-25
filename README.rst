@@ -94,7 +94,7 @@ internally. Following are two examples:
             # optional, defaults to 50 lines
             max_read_lines = 100
 
-            def startup_callback(self):
+            def startup_check(self):
                 """
                 Optional callback used to check process responsiveness
                 after the provided pattern has been matched. Returned
@@ -107,7 +107,7 @@ internally. Following are two examples:
 
                 This method will be called multiple times to check if the
                 process is ready to answer queries. A 'TimeoutError' exception
-                will be raised if the provied 'startup_callback' does not
+                will be raised if the provied 'startup_check' does not
                 return 'True' before 'timeout' seconds.
                 """
                 sock = socket.socket()
@@ -150,15 +150,15 @@ information to start a process instance will be provided:
   the first 50 lines of stdout are redirected to a logfile, which is returned
   pointing to the line right after the ``pattern`` match.
 
-- ``startup_callback`` when provided will be called upon to check process
+- ``startup_check`` when provided will be called upon to check process
   responsiveness after ``ProcessStarter.pattern`` is matched. By default,
   ``XProcess.ensure`` will attempt to match ``ProcessStarter.pattern`` when
   starting a process, if matched, xprocess will consider the process as ready
-  to answer querries. If ``startup_callback`` is provided though, its return
+  to answer queries. If ``startup_check`` is provided though, its return
   value will also be considered to determine if the process has been
-  properly started. If ``startup_callback`` returns True after
+  properly started. If ``startup_check`` returns True after
   ``ProcessStarter.pattern`` has been matched, ``XProcess.ensure`` will return
-  sucessfully. In contrast, if ``startup_callback`` does not return ``True``
+  sucessfully. In contrast, if ``startup_check`` does not return ``True``
   before timing out, ``XProcess.ensure`` will raise a ``TimeoutError`` exception.
 
 - Adicionally, ``env`` may be defined to customize the environment in which the

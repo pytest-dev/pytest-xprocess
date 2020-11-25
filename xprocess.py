@@ -226,7 +226,7 @@ class ProcessStarter(ABC):
         """The pattern to be matched when process is starting."""
         raise NotImplementedError
 
-    def startup_callback(self):
+    def startup_check(self):
         """Used to assert process responsiveness after pattern match"""
         return True
 
@@ -235,7 +235,7 @@ class ProcessStarter(ABC):
         callback funtion. Will raise TimeoutError if self.callback does not
         return True before self.timeout seconds"""
         while True:
-            if self.startup_callback():
+            if self.startup_check():
                 return True
             if datetime.now() > self._max_time:
                 raise TimeoutError(
