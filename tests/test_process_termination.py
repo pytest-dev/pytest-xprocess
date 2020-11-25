@@ -19,7 +19,6 @@ def test_clean_shutdown(port, proc_name, xprocess):
     info = xprocess.getinfo(proc_name)
     assert info.isrunning()
     children = psutil.Process(info.pid).children()
-    assert len(children) >= 1
     assert info.terminate()
     for child in children:
         assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
@@ -50,7 +49,6 @@ def test_terminate_only_parent(port, proc_name, xprocess):
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
     children = psutil.Process(info.pid).children()
-    assert len(children) >= 1
     assert info.terminate(kill_proc_tree=False) == 1
     assert not info.isrunning()
     for p in children:
