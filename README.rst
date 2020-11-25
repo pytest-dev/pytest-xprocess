@@ -1,8 +1,20 @@
 pytest-xprocess
 ===============
 
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+   :target: https://github.com/pytest-dev/pytest-xprocess/blob/master/LICENSE
+   :alt: License
+
 .. image:: https://img.shields.io/pypi/v/pytest-xprocess.svg
     :target: https://pypi.org/project/pytest-xprocess
+
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/ambv/black
+   :alt: style
+
+.. image:: https://img.shields.io/github/issues-raw/pytest-dev/pytest-xprocess.svg
+   :target: https://github.com/pytest-dev/pytest-xprocess/issues
+   :alt: Issues
 
 .. image:: https://img.shields.io/pypi/pyversions/pytest-xprocess.svg
     :target: https://pypi.org/project/pytest-xprocess
