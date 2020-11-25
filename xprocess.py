@@ -157,7 +157,6 @@ class XProcess:
             f.seek(0, 2)
         else:
             if not starter.wait(f):
-                # TODO: update error message for callback
                 raise RuntimeError(
                     "Could not start process {}, the specified "
                     "log pattern was not found within {} lines.".format(
@@ -218,24 +217,42 @@ class ProcessStarter(ABC):
     @property
     @abstractmethod
     def args(self):
-        "The args to start the process."
+        """The args to start the process."""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def pattern(self):
-        "The pattern to match when the process has started."
+        """The pattern to be matched when process is starting."""
         raise NotImplementedError
 
     def startup_callback(self):
-        "Used to assert process responsiveness after pattern match"
+        """Used to assert process responsiveness after pattern match"""
         return True
 
+    def wait_callback(self):
+        """Assert that process is ready to answer queries using provided
+        callback funtion. Will raise TimeoutError if self.callback does not
+        return True before self.timeout seconds"""
+        while True:
+            if self.startup_callback():
+                return True
+            if datetime.now() > self._max_time:
+                raise TimeoutError(
+                    "The provided startup callback could not assert process\
+                    responsiveness within the specified time interval of {} \
+                    seconds".format(
+                        self.timeout
+                    )
+                )
+
     def wait(self, log_file):
-        "Wait until the pattern is mached and invoke callback."
+        """Wait until the pattern is mached and callback returns successful."""
+        self._max_time = datetime.now() + timedelta(seconds=self.timeout)
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
         has_match = any(std.re.search(self.pattern, line) for line in lines)
-        return has_match and self.startup_callback()
+        process_ready = self.wait_callback()
+        return has_match and process_ready
 
     def filter_lines(self, lines):
         """fetch first <max_read_lines>, ignoring blank lines."""
@@ -251,12 +268,11 @@ class ProcessStarter(ABC):
         """Read and yield one line at a time from log_file. Will raise
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
-        max_time = datetime.now() + timedelta(seconds=self.timeout)
         while True:
             line = log_file.readline()
             if not line:
                 std.time.sleep(0.1)
-            if datetime.now() > max_time:
+            if datetime.now() > self._max_time:
                 raise TimeoutError(
                     "The provided start pattern {} could not be matched \
                     within the specified time interval of {} seconds".format(
