@@ -1,9 +1,7 @@
-import functools
 import itertools
 import os
 import signal
 import sys
-import warnings
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
