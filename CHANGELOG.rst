@@ -1,3 +1,13 @@
+0.17.0 (UNRELEASED)
+-------------------
+
+- :class:`ProcessStarter` now has :meth:`startup_check`. This method can be optionaly overridden and will be called upon to check process responsiveness
+  after :attr:`ProcessStarter.pattern` is matched. By default, :meth:`XProcess.ensure` will only attempt to match :attr:`ProcessStarter.pattern` when starting a process, if matched, xprocess
+  will consider the process as ready to answer querries. If :meth:`startup_check` is provided though, its return value will also be considered to determine if the process has been
+  successfully started. If :meth:`startup_check` returns `True` after :attr:`ProcessStarter.pattern` has been matched, :meth:`XProcess.ensure` will return sucessfully. In contrast, if
+  :meth:`startup_check` does not return `True` before timing out, :meth:`XProcess.ensure` will raise a `TimeoutError` exception.
+
+
 0.16.0 (2020-10-29)
 -------------------
 

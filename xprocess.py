@@ -8,13 +8,14 @@ from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
 from datetime import timedelta
+from time import sleep
 
 import psutil
 from py import std
 
 
 class XProcessInfo:
-    """Holds Information of an active process instance represented by
+    """Holds information of an active process instance represented by
     a XProcess Object and offers recursive termination functionality of
     said process tree."""
 
@@ -217,19 +218,43 @@ class ProcessStarter(ABC):
     @property
     @abstractmethod
     def args(self):
-        "The args to start the process."
+        """The args to start the process."""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def pattern(self):
-        "The pattern to match when the process has started."
+        """The pattern to be matched when process is starting."""
         raise NotImplementedError
 
+    def startup_check(self):
+        """Used to assert process responsiveness after pattern match"""
+        return True
+
+    def wait_callback(self):
+        """Assert that process is ready to answer queries using provided
+        callback funtion. Will raise TimeoutError if self.callback does not
+        return True before self.timeout seconds"""
+        while True:
+            sleep(0.1)
+            if self.startup_check():
+                return True
+            if datetime.now() > self._max_time:
+                raise TimeoutError(
+                    "The provided startup callback could not assert process\
+                    responsiveness within the specified time interval of {} \
+                    seconds".format(
+                        self.timeout
+                    )
+                )
+
     def wait(self, log_file):
-        "Wait until the pattern is mached."
+        """Wait until the pattern is mached and callback returns successful."""
+        self._max_time = datetime.now() + timedelta(seconds=self.timeout)
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
-        return any(std.re.search(self.pattern, line) for line in lines)
+        has_match = any(std.re.search(self.pattern, line) for line in lines)
+        process_ready = self.wait_callback()
+        return has_match and process_ready
 
     def filter_lines(self, lines):
         """fetch first <max_read_lines>, ignoring blank lines."""
@@ -245,12 +270,11 @@ class ProcessStarter(ABC):
         """Read and yield one line at a time from log_file. Will raise
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
-        max_time = datetime.now() + timedelta(seconds=self.timeout)
         while True:
             line = log_file.readline()
             if not line:
                 std.time.sleep(0.1)
-            if datetime.now() > max_time:
+            if datetime.now() > self._max_time:
                 raise TimeoutError(
                     "The provided start pattern {} could not be matched \
                     within the specified time interval of {} seconds".format(
