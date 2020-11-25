@@ -1,9 +1,7 @@
-import functools
 import itertools
 import os
 import signal
 import sys
-import warnings
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
@@ -59,9 +57,9 @@ class XProcessInfo:
             for p in alive:
                 p.send_signal(signal.SIGKILL)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
-            if alive:
+            if alive:  # pragma: no cover
                 return -1
-        except psutil.Error:
+        except (psutil.Error, ValueError):
             return -1
         return 1
 
@@ -131,18 +129,15 @@ class XProcess:
             if info.pid is not None:
                 info.terminate()
             controldir = info.controldir.ensure(dir=1)
-            # controldir.remove()
-            preparefunc = CompatStarter.wrap(preparefunc)
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
             kwargs = {"env": starter.env}
-            if sys.platform == "win32":
+            if sys.platform == "win32":  # pragma: no cover
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
-                if sys.version_info >= (2, 7):
-                    sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
-                    sinfo.wShowWindow |= std.subprocess.SW_HIDE
+                sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
+                sinfo.wShowWindow |= std.subprocess.SW_HIDE
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
@@ -218,14 +213,12 @@ class ProcessStarter(ABC):
     @property
     @abstractmethod
     def args(self):
-        """The args to start the process."""
-        raise NotImplementedError
+        "The args to start the process."
 
     @property
     @abstractmethod
     def pattern(self):
-        """The pattern to be matched when process is starting."""
-        raise NotImplementedError
+        "The pattern to match when the process has started."
 
     def startup_check(self):
         """Used to assert process responsiveness after pattern match"""
@@ -282,38 +275,3 @@ class ProcessStarter(ABC):
                     )
                 )
             yield line
-
-
-class CompatStarter(ProcessStarter):
-    """A compatibility ProcessStarter to handle legacy preparefunc
-    and warn of the deprecation."""
-
-    # Define properties to satisfy the abstract property, though
-    # they will be overridden at the instance.
-    pattern = None
-    args = None
-
-    def __init__(self, preparefunc, control_dir, process):
-        self.prep(*preparefunc(control_dir))
-        super().__init__(control_dir, process)
-
-    def prep(self, wait, args, env=None):
-        """Given the return value of a preparefunc, prepare this
-        CompatStarter."""
-        self.pattern = wait
-        self.env = env
-        self.args = args
-
-        # wait is a function, supersedes the default behavior
-        if callable(wait):
-            self.wait = lambda lines: wait()
-
-    @classmethod
-    def wrap(cls, starter_cls):
-        """If starter_cls is not a ProcessStarter, assume it's the legacy
-        preparefunc and return it bound to a CompatStarter."""
-        if isinstance(starter_cls, type) and issubclass(starter_cls, ProcessStarter):
-            return starter_cls
-        depr_msg = "Pass a ProcessStarter for preparefunc"
-        warnings.warn(depr_msg, DeprecationWarning, stacklevel=3)
-        return functools.partial(CompatStarter, starter_cls)

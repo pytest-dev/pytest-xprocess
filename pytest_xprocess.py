@@ -51,5 +51,5 @@ def pytest_runtest_makereport(item, call):
         content = logfiles[name].read()
         if content:
             longrepr = getattr(report, "longrepr", None)
-            if hasattr(longrepr, "addsection"):
+            if hasattr(longrepr, "addsection"):  # pragma: no cover
                 longrepr.addsection("%s log" % name, content)
