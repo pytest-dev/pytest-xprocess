@@ -2,25 +2,32 @@ pytest-xprocess
 ===============
 
 .. image:: https://img.shields.io/maintenance/yes/2020
+    :target: https://github.com/pytest-dev/pytest-xprocess
     :alt: Maintenance
 
 .. image:: https://img.shields.io/github/last-commit/pytest-dev/pytest-xprocess
+    :target: https://github.com/pytest-dev/pytest-xprocess/commits/master
     :alt: GitHub last commit
 
 .. image:: https://img.shields.io/github/issues-pr-closed-raw/pytest-dev/pytest-xprocess
+    :target: https://github.com/pytest-dev/pytest-xprocess/pulls?q=is%3Apr+is%3Aclosed
     :alt: GitHub closed pull requests
 
 .. image:: https://img.shields.io/github/issues-closed/pytest-dev/pytest-xprocess
+    :target: https://github.com/pytest-dev/pytest-xprocess/issues?q=is%3Aissue+is%3Aclosed
     :alt: GitHub closed issues
 
 .. image:: https://img.shields.io/pypi/dm/pytest-xprocess
+    :target: https://pypi.org/project/pytest-xprocess/
     :alt: PyPI - Downloads
 
 .. image:: https://img.shields.io/github/languages/code-size/pytest-dev/pytest-xprocess
+    :target: https://github.com/pytest-dev/pytest-xprocess
     :alt: Code size
 
 .. image:: https://img.shields.io/pypi/v/pytest-xprocess.svg
-    :alt: Release
+  :target: https://github.com/pytest-dev/pytest-xprocess/releases
+  :alt: Release
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/pytest-dev/pytest-xprocess/blob/master/LICENSE
@@ -28,6 +35,7 @@ pytest-xprocess
 
 .. image:: https://img.shields.io/pypi/pyversions/pytest-xprocess.svg
     :target: https://pypi.org/project/pytest-xprocess
+    :alt: supported python versions
 
 .. image:: https://img.shields.io/github/issues-raw/pytest-dev/pytest-xprocess.svg
    :target: https://github.com/pytest-dev/pytest-xprocess/issues
