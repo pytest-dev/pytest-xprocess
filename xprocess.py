@@ -129,7 +129,6 @@ class XProcess:
             if info.pid is not None:
                 info.terminate()
             controldir = info.controldir.ensure(dir=1)
-            # controldir.remove()
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))

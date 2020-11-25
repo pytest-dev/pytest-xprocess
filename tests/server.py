@@ -6,9 +6,7 @@ from time import sleep
 
 
 class TestHandler(socketserver.StreamRequestHandler):
-    """
-    The request handler class for the test server.
-    """
+    """The request handler class for the test server."""
 
     def handle(self):
         while True:
