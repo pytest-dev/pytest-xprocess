@@ -210,6 +210,7 @@ def test_callback_success(xprocess):
 
 def test_callback_fail(xprocess):
     class Starter(ProcessStarter):
+        timeout = 5
         pattern = "started"
         args = [sys.executable, server_path, 6777, "--no-children"]
 
@@ -220,6 +221,6 @@ def test_callback_fail(xprocess):
             c = sock.recv(1)
             return c == b"wrong"
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TimeoutError):
         xprocess.ensure("server", Starter)
     xprocess.getinfo("server").terminate()
