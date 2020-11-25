@@ -98,13 +98,17 @@ internally. Following are two examples:
                 """
                 Optional callback used to check process responsiveness
                 after the provided pattern has been matched. Returned
-                value must be either True or False, where:
+                value must be a boolean, where:
 
                 True: Process has been sucessfuly started and is ready
                       to answer queries.
 
-                False: Callback failed during process startup, RuntimeError
-                       exception will be raised.
+                False: Callback failed during process startup.
+
+                This method will be called multiple times to check if the
+                process is ready to answer queries. A 'TimeoutError' exception
+                will be raised if the provied 'startup_callback' does not
+                return 'True' before 'timeout' seconds.
                 """
                 sock = socket.socket()
                 sock.connect(("localhost", 6777))
@@ -148,15 +152,14 @@ information to start a process instance will be provided:
 
 - ``startup_callback`` when provided will be called upon to check process
   responsiveness after ``ProcessStarter.pattern`` is matched. By default,
-  ``XProcess.ensure`` will attempt to match ProcessStarter.pattern when
+  ``XProcess.ensure`` will attempt to match ``ProcessStarter.pattern`` when
   starting a process, if matched, xprocess will consider the process as ready
   to answer querries. If ``startup_callback`` is provided though, its return
   value will also be considered to determine if the process has been
   properly started. If ``startup_callback`` returns True after
   ``ProcessStarter.pattern`` has been matched, ``XProcess.ensure`` will return
-  sucessfully. In contrast, if ``startup_callback`` returns False after
-  ``ProcessStarter.pattern`` has been matched, ``XProcess.ensure`` will raise a
-  RuntimeError exception.
+  sucessfully. In contrast, if ``startup_callback`` does not return ``True``
+  before timing out, ``XProcess.ensure`` will raise a ``TimeoutError`` exception.
 
 - Adicionally, ``env`` may be defined to customize the environment in which the
   new subprocess is invoked. To inherit the main test process
