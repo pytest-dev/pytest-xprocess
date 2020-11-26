@@ -1,4 +1,4 @@
-0.17.0 (UNRELEASED)
+0.17.0 (2020-11-26)
 -------------------
 
 - :class:`ProcessStarter` now has :meth:`startup_check`. This method can be optionaly overridden and will be called upon to check process responsiveness
