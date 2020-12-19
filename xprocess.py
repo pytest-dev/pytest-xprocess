@@ -104,7 +104,7 @@ class XProcess:
         """Return Process Info for the given external process."""
         return XProcessInfo(self.rootdir, name)
 
-    def ensure(self, name, preparefunc, restart=False):
+    def ensure(self, name, preparefunc, restart=False, **kwargs):
         """Returns (PID, logfile) from a newly started or already
             running process.
 
@@ -133,7 +133,8 @@ class XProcess:
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
-            kwargs = {"env": starter.env}
+            if "env" not in kwargs:
+                kwargs["env"] = starter.env
             if sys.platform == "win32":  # pragma: no cover
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
                 sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
