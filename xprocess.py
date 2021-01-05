@@ -100,6 +100,9 @@ class XProcess:
 
         self.log = log or Log()
 
+    def __del__(self):
+        self.popen.wait(20)
+
     def getinfo(self, name):
         """Return Process Info for the given external process."""
         return XProcessInfo(self.rootdir, name)
@@ -141,10 +144,10 @@ class XProcess:
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
-            popen = Popen(
+            self.popen = Popen(
                 args, cwd=str(controldir), stdout=stdout, stderr=STDOUT, **kwargs
             )
-            info.pid = pid = popen.pid
+            info.pid = pid = self.popen.pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
