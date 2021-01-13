@@ -48,7 +48,7 @@ def pytest_runtest_makereport(item, call):
     if logfiles is None:
         return
     for name in sorted(logfiles):
-        with open(logfiles[name]) as f:
+        with open(str(logfiles[name])) as f:
             content = f.read()
             if content:
                 longrepr = getattr(report, "longrepr", None)

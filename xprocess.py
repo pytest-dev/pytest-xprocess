@@ -154,7 +154,7 @@ class XProcess:
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
-        with open(info.logpath) as f:
+        with open(str(info.logpath)) as f:
             if not restart:
                 f.seek(0, 2)
             else:
