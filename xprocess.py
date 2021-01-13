@@ -90,6 +90,7 @@ class XProcess:
     def __init__(self, config, rootdir, log=None):
         self.config = config
         self.rootdir = rootdir
+        self.running_procs = []
 
         class Log:
             def debug(self, msg, *args):
@@ -101,7 +102,8 @@ class XProcess:
         self.log = log or Log()
 
     def __del__(self):
-        self.popen.wait(20)
+        for p in self.running_procs:
+            p.wait(30)  # TODO: remove hardcoded wait time
 
     def getinfo(self, name):
         """Return Process Info for the given external process."""
@@ -144,27 +146,28 @@ class XProcess:
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
-            self.popen = Popen(
-                args, cwd=str(controldir), stdout=stdout, stderr=STDOUT, **kwargs
+            self.running_procs.append(
+                Popen(args, cwd=str(controldir), stdout=stdout, stderr=STDOUT, **kwargs)
             )
-            info.pid = pid = self.popen.pid
+            info.pid = pid = self.running_procs[-1].pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
-        f = info.logpath.open()
-        if not restart:
-            f.seek(0, 2)
-        else:
-            if not starter.wait(f):
-                raise RuntimeError(
-                    "Could not start process {}, the specified "
-                    "log pattern was not found within {} lines.".format(
-                        name, starter.max_read_lines
+
+        with open(info.logpath) as f:
+            if not restart:
+                f.seek(0, 2)
+            else:
+                if not starter.wait(f):
+                    raise RuntimeError(
+                        "Could not start process {}, the specified "
+                        "log pattern was not found within {} lines.".format(
+                            name, starter.max_read_lines
+                        )
                     )
-                )
-            self.log.debug("%s process startup detected", name)
-        logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-        logfiles[name] = f
+                self.log.debug("%s process startup detected", name)
+            logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
+            logfiles[name] = info.logpath
         self.getinfo(name)
         return info.pid, info.logpath
 
