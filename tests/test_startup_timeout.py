@@ -29,8 +29,6 @@ def cleanup_server_instance(port):
 
 @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
 def test_timeout_raise_exception(port, proc_name, xprocess, request):
-    request.config._proc_wait_timeout = 60
-
     class Starter(ProcessStarter):
         timeout = 2
         max_read_lines = 500

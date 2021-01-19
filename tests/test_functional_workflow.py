@@ -32,9 +32,7 @@ def test_functional_work_flow(testdir):
     """
         % str(server_path)
     )
-    print("***running test_functional_work_flow 1***")
     result = testdir.runpytest()
-    print("***running test_functional_work_flow 2***")
     result.stdout.fnmatch_lines("*1 passed*")
     result = testdir.runpytest("--xshow")
     result.stdout.fnmatch_lines("*LIVE*")
