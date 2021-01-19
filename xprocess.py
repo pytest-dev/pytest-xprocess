@@ -106,7 +106,7 @@ class XProcess:
         for f in self.log_files:
             f.close()
         for p in self.running_procs:
-            p.wait(30)  # TODO: remove hardcoded wait time
+            p.wait()
 
     def getinfo(self, name):
         """Return Process Info for the given external process."""
