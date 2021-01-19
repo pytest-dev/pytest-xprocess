@@ -48,9 +48,8 @@ def pytest_runtest_makereport(item, call):
     if logfiles is None:
         return
     for name in sorted(logfiles):
-        with open(str(logfiles[name])) as f:
-            content = f.read()
-            if content:
-                longrepr = getattr(report, "longrepr", None)
-                if hasattr(longrepr, "addsection"):  # pragma: no cover
-                    longrepr.addsection("%s log" % name, content)
+        content = logfiles[name].read()
+        if content:
+            longrepr = getattr(report, "longrepr", None)
+            if hasattr(longrepr, "addsection"):  # pragma: no cover
+                longrepr.addsection("%s log" % name, content)

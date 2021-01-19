@@ -88,6 +88,7 @@ class XProcess:
     and information fetching."""
 
     def __init__(self, config, rootdir, log=None):
+        self.log_files = []
         self.config = config
         self.rootdir = rootdir
         self.running_procs = []
@@ -102,6 +103,8 @@ class XProcess:
         self.log = log or Log()
 
     def __del__(self):
+        for f in self.log_files:
+            f.close()
         for p in self.running_procs:
             p.wait(30)  # TODO: remove hardcoded wait time
 
@@ -153,21 +156,20 @@ class XProcess:
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
-
-        with open(str(info.logpath)) as f:
-            if not restart:
-                f.seek(0, 2)
-            else:
-                if not starter.wait(f):
-                    raise RuntimeError(
-                        "Could not start process {}, the specified "
-                        "log pattern was not found within {} lines.".format(
-                            name, starter.max_read_lines
-                        )
+        self.log_files.append(info.logpath.open())
+        if not restart:
+            self.log_files[-1].seek(0, 2)
+        else:
+            if not starter.wait(self.log_files[-1]):
+                raise RuntimeError(
+                    "Could not start process {}, the specified "
+                    "log pattern was not found within {} lines.".format(
+                        name, starter.max_read_lines
                     )
-                self.log.debug("%s process startup detected", name)
-            logfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-            logfiles[name] = info.logpath
+                )
+            self.log.debug("%s process startup detected", name)
+        pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
+        pytest_extlogfiles[name] = self.log_files[-1]
         self.getinfo(name)
         return info.pid, info.logpath
 
