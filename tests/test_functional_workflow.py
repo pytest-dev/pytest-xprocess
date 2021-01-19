@@ -19,6 +19,9 @@ def test_functional_work_flow(testdir):
                 max_read_lines = 200
                 args = [sys.executable, server_path, port]
 
+            # required so test won't hang on pytest_unconfigure
+            request.config._proc_wait_timeout = 1
+
             xprocess.ensure("server", Starter)
 
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -29,7 +32,9 @@ def test_functional_work_flow(testdir):
     """
         % str(server_path)
     )
+    print("***running test_functional_work_flow 1***")
     result = testdir.runpytest()
+    print("***running test_functional_work_flow 2***")
     result.stdout.fnmatch_lines("*1 passed*")
     result = testdir.runpytest("--xshow")
     result.stdout.fnmatch_lines("*LIVE*")
