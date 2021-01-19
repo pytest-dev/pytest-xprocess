@@ -87,10 +87,13 @@ class XProcess:
     a set of actions is offered, such as process startup, command line actions
     and information fetching."""
 
-    def __init__(self, config, rootdir, log=None):
-        self.log_files = []
-        self.config = config
+    def __init__(self, config, rootdir, log=None, _proc_wait_timeout=60):
         self.rootdir = rootdir
+
+        self.config = config
+        self.config.__dict__.setdefault("_proc_wait_timeout", _proc_wait_timeout)
+
+        self.log_files = []
         self.running_procs = []
 
         class Log:
@@ -103,10 +106,8 @@ class XProcess:
         self.log = log or Log()
 
     def __del__(self):
-        for f in self.log_files:
-            f.close()
-        for p in self.running_procs:
-            p.wait()
+        self.config.__dict__.setdefault("_running_procs", self.running_procs)
+        self.config.__dict__.setdefault("_file_handles", self.log_files)
 
     def getinfo(self, name):
         """Return Process Info for the given external process."""

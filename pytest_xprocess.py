@@ -53,3 +53,18 @@ def pytest_runtest_makereport(item, call):
             longrepr = getattr(report, "longrepr", None)
             if hasattr(longrepr, "addsection"):  # pragma: no cover
                 longrepr.addsection("%s log" % name, content)
+
+
+def pytest_unconfigure(config):
+    """Reading processes exit status is a requirement of subprocess module,
+    so each process instance should be properly waited upon. All file handles
+    should also be closed by the end of the test run. This is done in order to
+    avoid ResourceWarnings."""
+    running_procs = getattr(config, "_running_procs", None)
+    if running_procs:
+        for p in running_procs:
+            p.wait(config._proc_wait_timeout)
+    file_handles = getattr(config, "_file_handles", None)
+    if file_handles:
+        for f in file_handles:
+            f.close()
