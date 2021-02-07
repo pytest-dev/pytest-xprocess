@@ -2,6 +2,7 @@ import itertools
 import os
 import signal
 import sys
+import traceback
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
@@ -87,13 +88,13 @@ class XProcess:
     a set of actions is offered, such as process startup, command line actions
     and information fetching."""
 
-    def __init__(self, config, rootdir, log=None, _proc_wait_timeout=60):
+    def __init__(self, config, rootdir, log=None, proc_wait_timeout=60):
         self.rootdir = rootdir
 
         self.config = config
-        self.config.__dict__.setdefault("_proc_wait_timeout", _proc_wait_timeout)
+        self.proc_wait_timeout = proc_wait_timeout
 
-        self.log_files = []
+        self.file_handles = []
         self.running_procs = []
 
         class Log:
@@ -105,9 +106,12 @@ class XProcess:
 
         self.log = log or Log()
 
-    def __del__(self):
-        self.config.__dict__.setdefault("_running_procs", self.running_procs)
-        self.config.__dict__.setdefault("_file_handles", self.log_files)
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_type is not None:
+            traceback.print_exception(exc_type, exc_value, tb)
 
     def getinfo(self, name):
         """Return Process Info for the given external process."""
@@ -157,11 +161,11 @@ class XProcess:
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
-        self.log_files.append(info.logpath.open())
+        self.file_handles.append(info.logpath.open())
         if not restart:
-            self.log_files[-1].seek(0, 2)
+            self.file_handles[-1].seek(0, 2)
         else:
-            if not starter.wait(self.log_files[-1]):
+            if not starter.wait(self.file_handles[-1]):
                 raise RuntimeError(
                     "Could not start process {}, the specified "
                     "log pattern was not found within {} lines.".format(
@@ -170,7 +174,7 @@ class XProcess:
                 )
             self.log.debug("%s process startup detected", name)
         pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-        pytest_extlogfiles[name] = self.log_files[-1]
+        pytest_extlogfiles[name] = self.file_handles[-1]
         self.getinfo(name)
         return info.pid, info.logpath
 

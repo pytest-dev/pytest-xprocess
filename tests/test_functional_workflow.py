@@ -20,7 +20,7 @@ def test_functional_work_flow(testdir):
                 args = [sys.executable, server_path, port]
 
             # required so test won't hang on pytest_unconfigure
-            request.config._proc_wait_timeout = 1
+            xprocess.proc_wait_timeout = 1
 
             xprocess.ensure("server", Starter)
 
