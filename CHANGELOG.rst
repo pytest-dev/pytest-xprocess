@@ -1,9 +1,8 @@
 0.17.1 (UNRELEASED)
 -------------------
 
-- Fix `ResourceWarning` in :meth:`XProcess.ensure` caused by not waiting on Popen object's exit
-
-
+- Fix `ResourceWarning` in `:meth:XProcess.ensure` caused by not properly
+  waiting on process exit and leaked File handles
 
 0.17.0 (2020-11-26)
 -------------------
