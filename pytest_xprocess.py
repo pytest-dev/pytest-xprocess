@@ -44,11 +44,10 @@ def xprocess(request):
 
     """Reading processes exit status is a requirement of subprocess module,
     so each process instance should be properly waited upon."""
-    if xproc.running_procs:
-        for p in xproc.running_procs:
-            p.wait(xproc.proc_wait_timeout)
+    for p in xproc.running_procs:
+        p.wait(xproc.proc_wait_timeout)
 
-    request.config.__dict__.setdefault("_file_handles", xproc.file_handles)
+    request.config._xprocess_file_handles += xproc.file_handles
 
 
 @pytest.mark.hookwrapper
@@ -65,10 +64,12 @@ def pytest_runtest_makereport(item, call):
                 longrepr.addsection("%s log" % name, content)
 
 
+def pytest_configure(config):
+    config.__dict__.setdefault("_xprocess_file_handles", [])
+
+
 def pytest_unconfigure(config):
     """All logfile handles should be closed by the end of the test run.
     This is done in order to avoid ResourceWarnings."""
-    file_handles = getattr(config, "_file_handles", None)
-    if file_handles:
-        for f in file_handles:
-            f.close()
+    for f in config._xprocess_file_handles:
+        f.close()
