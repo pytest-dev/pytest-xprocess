@@ -1,7 +1,7 @@
 pytest-xprocess
 ===============
 
-.. image:: https://img.shields.io/maintenance/yes/2020?color=blue
+.. image:: https://img.shields.io/maintenance/yes/2021?color=blue
     :target: https://github.com/pytest-dev/pytest-xprocess
     :alt: Maintenance
 
