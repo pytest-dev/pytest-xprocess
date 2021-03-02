@@ -1,7 +1,7 @@
-0.17.1 (UNRELEASED)
+0.17.1 (2020-02-28)
 -------------------
 
-- Fix `ResourceWarning` in `:meth:XProcess.ensure` caused by not properly
+- Fix `ResourceWarning` in :meth:`XProcess.ensure` caused by not properly
   waiting on process exit and leaked File handles
 
 0.17.0 (2020-11-26)
