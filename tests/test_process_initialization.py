@@ -90,7 +90,7 @@ def test_runtime_error_on_start_fail(port, proc_name, xprocess):
 
 
 @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_popen_kwargs(port, proc_name, xprocess):
+def test_popen_kwargs(port, proc_name, xprocess, tmpdir):
     class Starter(ProcessStarter):
         pattern = "started"
         args = [sys.executable, server_path, port, "--no-children"]
@@ -98,7 +98,11 @@ def test_popen_kwargs(port, proc_name, xprocess):
 
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
-    text_mode = xprocess.running_procs[-1].text_mode
+
+    if sys.version_info < (3, 7):
+        text_mode = xprocess.running_procs[-1].universal_newlines
+    else:
+        text_mode = xprocess.running_procs[-1].text_mode
 
     assert info.isrunning()
     assert text_mode
