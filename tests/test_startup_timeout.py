@@ -24,10 +24,11 @@ def cleanup_server_instance(port):
         ConnectionResetError,
     ):  # Server is terminated
         pass
+    sock.close()
 
 
 @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_timeout_raise_exception(port, proc_name, xprocess):
+def test_timeout_raise_exception(port, proc_name, xprocess, request):
     class Starter(ProcessStarter):
         timeout = 2
         max_read_lines = 500

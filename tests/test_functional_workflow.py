@@ -19,6 +19,9 @@ def test_functional_work_flow(testdir):
                 max_read_lines = 200
                 args = [sys.executable, server_path, port]
 
+            # required so test won't hang on pytest_unconfigure
+            xprocess.proc_wait_timeout = 1
+
             xprocess.ensure("server", Starter)
 
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

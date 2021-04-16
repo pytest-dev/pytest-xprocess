@@ -38,7 +38,16 @@ def xprocess(request):
     processes required for testing.
     """
     rootdir = getrootdir(request.config)
-    return XProcess(request.config, rootdir)
+
+    with XProcess(request.config, rootdir) as xproc:
+        yield xproc
+
+    """Reading processes exit status is a requirement of subprocess module,
+    so each process instance should be properly waited upon."""
+    for p in xproc.running_procs:
+        p.wait(xproc.proc_wait_timeout)
+
+    request.config._xprocess_file_handles += xproc.file_handles
 
 
 @pytest.mark.hookwrapper
@@ -53,3 +62,14 @@ def pytest_runtest_makereport(item, call):
             longrepr = getattr(report, "longrepr", None)
             if hasattr(longrepr, "addsection"):  # pragma: no cover
                 longrepr.addsection("%s log" % name, content)
+
+
+def pytest_configure(config):
+    config.__dict__.setdefault("_xprocess_file_handles", [])
+
+
+def pytest_unconfigure(config):
+    """All logfile handles should be closed by the end of the test run.
+    This is done in order to avoid ResourceWarnings."""
+    for f in config._xprocess_file_handles:
+        f.close()
