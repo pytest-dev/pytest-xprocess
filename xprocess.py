@@ -117,7 +117,7 @@ class XProcess:
         """Return Process Info for the given external process."""
         return XProcessInfo(self.rootdir, name)
 
-    def ensure(self, name, preparefunc, restart=False, **kwargs):
+    def ensure(self, name, preparefunc, restart=False):
         """Returns (PID, logfile) from a newly started or already
             running process.
 
@@ -146,8 +146,19 @@ class XProcess:
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "wb", 0)
-            if "env" not in kwargs:
-                kwargs["env"] = starter.env
+
+            # is env still necessary? we could pass all in popen_kwargs
+            kwargs = {"env": starter.env}
+
+            popen_kwargs = {
+                "cwd": str(controldir),
+                "stdout": stdout,
+                "stderr": STDOUT,
+                **starter.popen_kwargs,  # this gives the user the ability to
+                # override the previous keywords if
+                # desired
+            }
+
             if sys.platform == "win32":  # pragma: no cover
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
                 sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
@@ -156,7 +167,11 @@ class XProcess:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
             self.running_procs.append(
-                Popen(args, cwd=str(controldir), stdout=stdout, stderr=STDOUT, **kwargs)
+                Popen(
+                    args,
+                    **popen_kwargs,
+                    **kwargs,
+                )
             )
             info.pid = pid = self.running_procs[-1].pid
             info.pidpath.write(str(pid))
@@ -210,6 +225,9 @@ class ProcessStarter(ABC):
 
     @cvar env: The environment in which to invoke the process.
 
+    @cvar env: A dictionary containing keyword arguments to be passed to the Popen
+    constructor.
+
     @cvar timeout: The maximum time ProcessStarter.wait will hang waiting for a new
              line when trying to match pattern before raising TimeoutError.
 
@@ -218,6 +236,7 @@ class ProcessStarter(ABC):
 
     env = None
     timeout = 120
+    popen_kwargs = {}
     max_read_lines = 50
 
     def __init__(self, control_dir, process):
