@@ -90,7 +90,7 @@ def test_runtime_error_on_start_fail(port, proc_name, xprocess):
 
 
 @pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_popen_kwargs(port, proc_name, xprocess, tmpdir):
+def test_popen_kwargs(port, proc_name, xprocess):
     class Starter(ProcessStarter):
         pattern = "started"
         args = [sys.executable, server_path, port, "--no-children"]
