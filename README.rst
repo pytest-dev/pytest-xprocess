@@ -125,6 +125,14 @@ internally. Following are two examples:
             # command to start process
             args = ['command', 'arg1', 'arg2']
 
+            # passing extra keyword values to
+            # sucprocess.Popen constructor
+            popen_kwargs = {
+                "shell": True,
+                "user": "<my_username>",
+                "universal_newlines": True,
+            }
+
             # max startup waiting time
             # optional, defaults to 120 seconds
             timeout = 45
@@ -180,6 +188,9 @@ information to start a process instance will be provided:
   answer queries.
 
 - ``args`` is a list of arguments, used to invoke a new subprocess.
+
+- ``popen_kwargs`` A dictionary containing keyword values which will be passed
+  to the ``subprocess.Popen`` constructor when initializing the process.
 
 - ``timeout`` may be used to specify the maximum time in seconds to wait for
   process startup.

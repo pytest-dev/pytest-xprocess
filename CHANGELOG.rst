@@ -1,3 +1,11 @@
+0.18.0 (UNRELEASED)
+-------------------
+
+- Add a new `popen_kwargs` variable to `ProcessStarter`, this variable can
+  be used for passing keyword values to the `subprocess.Popen` constructor,
+  giving the user more control over the initialized process.
+
+
 0.17.1 (2020-02-28)
 -------------------
 
