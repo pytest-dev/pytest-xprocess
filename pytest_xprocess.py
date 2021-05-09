@@ -34,11 +34,10 @@ def pytest_cmdline_main(config):
 
 @pytest.fixture(scope="session")
 def xprocess(request):
-    """Return session-scoped XProcess helper to manage long-running
+    """yield session-scoped XProcess helper to manage long-running
     processes required for testing.
     """
     rootdir = getrootdir(request.config)
-
     with XProcess(request.config, rootdir) as xproc:
         yield xproc
 

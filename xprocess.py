@@ -48,20 +48,27 @@ class XProcessInfo:
             parent = psutil.Process(self.pid)
         except psutil.NoSuchProcess:
             return 0
+
         try:
             kill_list = [parent]
             if kill_proc_tree:
                 kill_list += parent.children(recursive=True)
+
+            # attempt graceful termination first
             for p in kill_list:
                 p.send_signal(signal.SIGTERM)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+
+            # forcefuly terminate procs still running
             for p in alive:
                 p.send_signal(signal.SIGKILL)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+
             if alive:  # pragma: no cover
                 return -1
         except (psutil.Error, ValueError):
             return -1
+
         return 1
 
     def isrunning(self, ignore_zombies=True):
@@ -78,6 +85,7 @@ class XProcessInfo:
             proc = psutil.Process(self.pid)
         except psutil.NoSuchProcess:
             return False
+
         return proc.is_running() and (
             not ignore_zombies or proc.status() != psutil.STATUS_ZOMBIE
         )
@@ -89,13 +97,11 @@ class XProcess:
     and information fetching."""
 
     def __init__(self, config, rootdir, log=None, proc_wait_timeout=60):
-        self.rootdir = rootdir
-
         self.config = config
-        self.proc_wait_timeout = proc_wait_timeout
-
+        self.rootdir = rootdir
         self.file_handles = []
         self.running_procs = []
+        self.proc_wait_timeout = proc_wait_timeout
 
         class Log:
             def debug(self, msg, *args):
@@ -139,8 +145,10 @@ class XProcess:
             restart = True
 
         if restart:
+            # ensure the process is terminated first
             if info.pid is not None:
                 info.terminate()
+
             controldir = info.controldir.ensure(dir=1)
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
@@ -154,9 +162,10 @@ class XProcess:
                 "cwd": str(controldir),
                 "stdout": stdout,
                 "stderr": STDOUT,
-                **starter.popen_kwargs,  # this gives the user the ability to
+                # this gives the user the ability to
                 # override the previous keywords if
                 # desired
+                **starter.popen_kwargs,
             }
 
             if sys.platform == "win32":  # pragma: no cover
@@ -166,6 +175,10 @@ class XProcess:
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
+
+            # keep track of all Popen objects in order
+            # to correctly wait upon their termination
+            # as per subprocess docs
             self.running_procs.append(
                 Popen(
                     args,
@@ -173,11 +186,16 @@ class XProcess:
                     **kwargs,
                 )
             )
+
             info.pid = pid = self.running_procs[-1].pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
+
+        # keep track of all file handles so we can
+        # cleanup later during teardown phase
         self.file_handles.append(info.logpath.open())
+
         if not restart:
             self.file_handles[-1].seek(0, 2)
         else:
@@ -189,9 +207,11 @@ class XProcess:
                     )
                 )
             self.log.debug("%s process startup detected", name)
+
         pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         pytest_extlogfiles[name] = self.file_handles[-1]
         self.getinfo(name)
+
         return info.pid, info.logpath
 
     def _infos(self):
@@ -298,8 +318,10 @@ class ProcessStarter(ABC):
         seconds."""
         while True:
             line = log_file.readline()
+
             if not line:
                 std.time.sleep(0.1)
+
             if datetime.now() > self._max_time:
                 raise TimeoutError(
                     "The provided start pattern {} could not be matched \
@@ -307,4 +329,5 @@ class ProcessStarter(ABC):
                         self.pattern, self.timeout
                     )
                 )
+
             yield line
