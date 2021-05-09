@@ -99,10 +99,11 @@ def test_popen_kwargs(port, proc_name, xprocess):
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
 
+    proc_dict = xprocess.running_procs[-1]
     if sys.version_info < (3, 7):
-        text_mode = xprocess.running_procs[-1].universal_newlines
+        text_mode = proc_dict["popen_instance"].universal_newlines
     else:
-        text_mode = xprocess.running_procs[-1].text_mode
+        text_mode = proc_dict["popen_instance"].text_mode
 
     assert info.isrunning()
     assert text_mode

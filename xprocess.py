@@ -180,14 +180,17 @@ class XProcess:
             # to correctly wait upon their termination
             # as per subprocess docs
             self.running_procs.append(
-                Popen(
-                    args,
-                    **popen_kwargs,
-                    **kwargs,
-                )
+                {
+                    "xprocess_info": info,
+                    "popen_instance": Popen(
+                        args,
+                        **popen_kwargs,
+                        **kwargs,
+                    ),
+                }
             )
 
-            info.pid = pid = self.running_procs[-1].pid
+            info.pid = pid = self.running_procs[-1]["popen_instance"].pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()

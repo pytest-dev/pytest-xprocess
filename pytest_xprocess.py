@@ -41,11 +41,15 @@ def xprocess(request):
     with XProcess(request.config, rootdir) as xproc:
         yield xproc
 
-    """Reading processes exit status is a requirement of subprocess module,
-    so each process instance should be properly waited upon."""
-    for p in xproc.running_procs:
-        p.wait(xproc.proc_wait_timeout)
+    # cleanup started processes
+    for pdict in xproc.running_procs:
+        pdict["xprocess_info"].terminate()
+        # Reading processes exit status is a requirement of subprocess,
+        # so each process instance should be properly waited upon
+        pdict["popen_instance"].wait(xproc.proc_wait_timeout)
 
+    # open files will still be used for reports/logs so we pass
+    # the handles into pytest_unconfigure where they will be closed later
     request.config._xprocess_file_handles += xproc.file_handles
 
 
@@ -68,7 +72,7 @@ def pytest_configure(config):
 
 
 def pytest_unconfigure(config):
-    """All logfile handles should be closed by the end of the test run.
-    This is done in order to avoid ResourceWarnings."""
+    # All logfile handles should be closed by the end of the test run.
+    # This is done in order to avoid ResourceWarnings
     for f in config._xprocess_file_handles:
         f.close()
