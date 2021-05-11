@@ -40,17 +40,11 @@ def xprocess(request):
     rootdir = getrootdir(request.config)
     with XProcess(request.config, rootdir) as xproc:
         yield xproc
-
-    # cleanup started processes
-    for pdict in xproc.running_procs:
-        pdict["xprocess_info"].terminate()
-        # Reading processes exit status is a requirement of subprocess,
-        # so each process instance should be properly waited upon
-        pdict["popen_instance"].wait(xproc.proc_wait_timeout)
-
-    # open files will still be used for reports/logs so we pass
-    # the handles into pytest_unconfigure where they will be closed later
-    request.config._xprocess_file_handles += xproc.file_handles
+        # pass in resources used by xprocess such as file handles,
+        # popen instances, XProcessInfo objects) into pytest_unconfigure
+        # through config for proper cleanup during teardown
+        xproc.xresources["timeout"] = xproc.proc_wait_timeout
+        request.config._xproc_resources = xproc.xresources
 
 
 @pytest.mark.hookwrapper
@@ -67,12 +61,17 @@ def pytest_runtest_makereport(item, call):
                 longrepr.addsection("%s log" % name, content)
 
 
-def pytest_configure(config):
-    config.__dict__.setdefault("_xprocess_file_handles", [])
+def cleanup(resources):
+    # All logfile handles should be closed by the end of the test run.
+    # This is done in order to avoid ResourceWarnings
+    for f in resources["file_handles"]:
+        f.close()
+    # Reading processes exit status is a requirement of subprocess,
+    # so each process instance should be properly waited upon
+    for p in resources["popen_instances"]:
+        p.wait(resources["timeout"])
 
 
 def pytest_unconfigure(config):
-    # All logfile handles should be closed by the end of the test run.
-    # This is done in order to avoid ResourceWarnings
-    for f in config._xprocess_file_handles:
-        f.close()
+    # free resources and wait on procs exit status
+    cleanup(config._xproc_resources)
