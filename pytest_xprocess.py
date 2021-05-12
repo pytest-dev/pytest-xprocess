@@ -1,6 +1,7 @@
 import py
 import pytest
 
+from _internal import getrootdir
 from xprocess import XProcess
 
 
@@ -12,10 +13,6 @@ def pytest_addoption(parser):
     group.addoption(
         "--xshow", action="store_true", help="show status of external process"
     )
-
-
-def getrootdir(config):
-    return config.cache.makedir(".xprocess")
 
 
 def pytest_cmdline_main(config):
@@ -35,16 +32,13 @@ def pytest_cmdline_main(config):
 @pytest.fixture(scope="session")
 def xprocess(request):
     """yield session-scoped XProcess helper to manage long-running
-    processes required for testing.
-    """
+    processes required for testing."""
     rootdir = getrootdir(request.config)
     with XProcess(request.config, rootdir) as xproc:
         yield xproc
-        # pass in resources used by xprocess such as file handles,
-        # popen instances, XProcessInfo objects) into pytest_unconfigure
+        # pass in xprocess object into pytest_unconfigure
         # through config for proper cleanup during teardown
-        xproc.xresources["timeout"] = xproc.proc_wait_timeout
-        request.config._xproc_resources = xproc.xresources
+        request.config._xprocess = xproc
 
 
 @pytest.mark.hookwrapper
@@ -61,17 +55,5 @@ def pytest_runtest_makereport(item, call):
                 longrepr.addsection("%s log" % name, content)
 
 
-def cleanup(resources):
-    # All logfile handles should be closed by the end of the test run.
-    # This is done in order to avoid ResourceWarnings
-    for f in resources["file_handles"]:
-        f.close()
-    # Reading processes exit status is a requirement of subprocess,
-    # so each process instance should be properly waited upon
-    for p in resources["popen_instances"]:
-        p.wait(resources["timeout"])
-
-
 def pytest_unconfigure(config):
-    # free resources and wait on procs exit status
-    cleanup(config._xproc_resources)
+    config._xprocess._cleanup()

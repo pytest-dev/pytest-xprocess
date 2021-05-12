@@ -101,13 +101,11 @@ class XProcess:
         self.rootdir = rootdir
         self.proc_wait_timeout = proc_wait_timeout
 
-        # this will be used to pass all necessary
-        # references for proper cleanup during teardown
-        self.xresources = {
-            "info_objects": [],
-            "file_handles": [],
-            "popen_instances": [],
-        }
+        # these will be used to keep all necessary
+        # references for proper cleanup before exiting
+        self._info = None
+        self._file_handles = []
+        self._popen_instances = []
 
         class Log:
             def debug(self, msg, *args):
@@ -182,28 +180,24 @@ class XProcess:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
 
-            # keep track of all popen and info objects
-            # in order to correctly wait upon their
-            # termination as per subprocess docs
-            procs = self.xresources["popen_instances"]
-            infos = self.xresources["info_objects"]
-            infos.append(info)
-            procs.append(Popen(args, **popen_kwargs, **kwargs))
+            # keep references of all popen
+            # and info objects for cleanup
+            self._info = info
+            self._popen_instances.append(Popen(args, **popen_kwargs, **kwargs))
 
-            info.pid = pid = procs[-1].pid
+            info.pid = pid = self._popen_instances[-1].pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
         # keep track of all file handles so we can
         # cleanup later during teardown phase
-        fhandles = self.xresources["file_handles"]
-        fhandles.append(info.logpath.open())
+        self._file_handles.append(info.logpath.open())
 
         if not restart:
-            fhandles[-1].seek(0, 2)
+            self._file_handles[-1].seek(0, 2)
         else:
-            if not starter.wait(fhandles[-1]):
+            if not starter.wait(self._file_handles[-1]):
                 raise RuntimeError(
                     "Could not start process {}, the specified "
                     "log pattern was not found within {} lines.".format(
@@ -213,10 +207,21 @@ class XProcess:
             self.log.debug("%s process startup detected", name)
 
         pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-        pytest_extlogfiles[name] = fhandles[-1]
+        pytest_extlogfiles[name] = self._file_handles[-1]
         self.getinfo(name)
 
         return info.pid, info.logpath
+
+    def _cleanup(self):
+        """All logfile handles should be closed by the end
+        of the test run, after reports are generated. This is done
+        in order to avoid ResourceWarnings. Also, reading processes
+        exit status is a requirement of subprocess, so each process
+        instance should be properly waited upon."""
+        for f in self._file_handles:
+            f.close()
+        for p in self._popen_instances:
+            p.wait(self.proc_wait_timeout)
 
     def _infos(self):
         return (self.getinfo(p.basename) for p in self.rootdir.listdir())
