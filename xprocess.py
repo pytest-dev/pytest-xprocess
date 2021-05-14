@@ -239,6 +239,20 @@ class XProcess:
             tw.line(tmpl.format(**locals()))
         return 0
 
+    def _clean_up_resources(self):
+        # file handles should always be closed
+        # in order to avoid ResourceWarnings
+        for f in self._file_handles:
+            f.close()
+        # XProcessInfo objects and Popen objects have
+        # a one to one relation, so we should wait on
+        # procs exit status if termination signal has
+        # been isued for that particular XProcessInfo
+        # Object (subprocess requirement)
+        for info, proc in zip(self._info_objects, self._popen_instances):
+            if info._termination_signal:
+                proc.wait(self.proc_wait_timeout)
+
 
 class ProcessStarter(ABC):
     """Describes the characteristics of a process to start and, waiting
