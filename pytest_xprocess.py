@@ -56,4 +56,16 @@ def pytest_runtest_makereport(item, call):
 
 
 def pytest_unconfigure(config):
-    config._xprocess._cleanup()
+    xproc = config._xprocess
+    # file handles should always be closed
+    # in order to avoid ResourceWarnings
+    for f in xproc._file_handles:
+        f.close()
+    # XProcessInfo objects and Popen objects have
+    # a one to one relation, so we should wait on
+    # procs exit status if termination signal has
+    # been isued for that particular XProcessInfo
+    # Object (subprocess requirement)
+    for info, proc in zip(xproc._info_objects, xproc._popen_instances):
+        if info._termination_signal:
+            proc.wait(xproc.proc_wait_timeout)

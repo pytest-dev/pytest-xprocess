@@ -20,6 +20,7 @@ class XProcessInfo:
 
     def __init__(self, path, name):
         self.name = name
+        self._termination_signal = False
         self.controldir = path.ensure(name, dir=1)
         self.logpath = self.controldir.join("xprocess.log")
         self.pidpath = self.controldir.join("xprocess.PID")
@@ -69,6 +70,8 @@ class XProcessInfo:
         except (psutil.Error, ValueError):
             return -1
 
+        self._termination_signal = True
+
         return 1
 
     def isrunning(self, ignore_zombies=True):
@@ -103,7 +106,7 @@ class XProcess:
 
         # these will be used to keep all necessary
         # references for proper cleanup before exiting
-        self._info = None
+        self._info_objects = []
         self._file_handles = []
         self._popen_instances = []
 
@@ -182,7 +185,7 @@ class XProcess:
 
             # keep references of all popen
             # and info objects for cleanup
-            self._info = info
+            self._info_objects.append(info)
             self._popen_instances.append(Popen(args, **popen_kwargs, **kwargs))
 
             info.pid = pid = self._popen_instances[-1].pid
@@ -211,17 +214,6 @@ class XProcess:
         self.getinfo(name)
 
         return info.pid, info.logpath
-
-    def _cleanup(self):
-        """All logfile handles should be closed by the end
-        of the test run, after reports are generated. This is done
-        in order to avoid ResourceWarnings. Also, reading processes
-        exit status is a requirement of subprocess, so each process
-        instance should be properly waited upon."""
-        for f in self._file_handles:
-            f.close()
-        for p in self._popen_instances:
-            p.wait(self.proc_wait_timeout)
 
     def _infos(self):
         return (self.getinfo(p.basename) for p in self.rootdir.listdir())
