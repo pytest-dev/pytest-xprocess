@@ -176,6 +176,9 @@ make sure it is running during your testing phase. Also, you are not restricted
 to having a single external process at a time, ``xprocess`` can be used to handle
 multiple diferent processes or several instances of the same process.
 
+*Obs*. In the event of an unforeseen exception/interruption when running pytest,
+``pytest-xprocess`` will attempt to terminate all started processes in order to avoid
+lingering traces of unfinished test runs.
 
 Starter Class
 -------------
