@@ -5,6 +5,9 @@
   be used for passing keyword values to the `subprocess.Popen` constructor,
   giving the user more control over the initialized process.
 
+- `pytest-xprocess` will now attempt to terminate and clean-up all started
+  processes upon interruptions (`SIGTERM`) or any internal errors during
+  pytest runs.
 
 0.17.1 (2020-02-28)
 -------------------
