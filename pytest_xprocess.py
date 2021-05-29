@@ -57,10 +57,12 @@ def pytest_runtest_makereport(item, call):
 
 def pytest_unconfigure(config):
     try:
-        config._xprocess._clean_up_resources()
+        xprocess = config._xprocess
     except AttributeError:
         # xprocess fixture was not used
         pass
+    else:
+        xprocess._clean_up_resources()
 
 
 def pytest_configure(config):
@@ -81,11 +83,13 @@ class InterruptionHandler:
 
     def interruption_clean_up(self):
         try:
-            for info in self.info_objects():
-                info.terminate()
-            self.config._xprocess._clean_up_resources()
+            xprocess = self.config._xprocess
         except AttributeError:
             pass
+        else:
+            for info in self.info_objects():
+                info.terminate()
+            xprocess._clean_up_resources()
 
     def pytest_keyboard_interrupt(self, excinfo):
         self.interruption_clean_up()
