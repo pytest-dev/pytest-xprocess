@@ -185,7 +185,7 @@ class XProcess:
 
             # keep references of all popen
             # and info objects for cleanup
-            self._info_objects.append(info)
+            self._info_objects.append((info, starter.terminate_on_interrupt))
             self._popen_instances.append(Popen(args, **popen_kwargs, **kwargs))
 
             info.pid = pid = self._popen_instances[-1].pid
@@ -249,7 +249,7 @@ class XProcess:
         # procs exit status if termination signal has
         # been isued for that particular XProcessInfo
         # Object (subprocess requirement)
-        for info, proc in zip(self._info_objects, self._popen_instances):
+        for (info, _), proc in zip(self._info_objects, self._popen_instances):
             if info._termination_signal:
                 proc.wait(self.proc_wait_timeout)
 
@@ -273,6 +273,7 @@ class ProcessStarter(ABC):
     timeout = 120
     popen_kwargs = {}
     max_read_lines = 50
+    terminate_on_interrupt = False
 
     def __init__(self, control_dir, process):
         self.control_dir = control_dir

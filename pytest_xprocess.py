@@ -87,8 +87,9 @@ class InterruptionHandler:
         except AttributeError:
             pass
         else:
-            for info in self.info_objects():
-                info.terminate()
+            for info, terminate_on_interrupt in self.info_objects():
+                if terminate_on_interrupt:
+                    info.terminate()
             xprocess._clean_up_resources()
 
     def pytest_keyboard_interrupt(self, excinfo):
