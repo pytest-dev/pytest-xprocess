@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def test_processes_start(testdir):
+def test_interruption_cleanup(testdir):
     server_path = Path(__file__).parent.joinpath("server.py").absolute()
     testdir.makepyfile(
         """
@@ -10,14 +10,15 @@ def test_processes_start(testdir):
         from xprocess import ProcessStarter
 
         def test_servers_start(request, xprocess):
-            port = 6777
+            port = 6999
             server_path = %r
 
             class Starter(ProcessStarter):
+                terminate_on_interrupt = True
                 pattern = "started"
                 args = [sys.executable, server_path, port]
 
-            xprocess.ensure("server01", Starter)
+            xprocess.ensure("server_test_interrupt", Starter)
 
             raise KeyboardInterrupt
         """
@@ -27,3 +28,33 @@ def test_processes_start(testdir):
     result.stdout.fnmatch_lines("*KeyboardInterrupt*")
     result = testdir.runpytest("--xshow")
     result.stdout.no_fnmatch_line("*LIVE*")
+
+
+def test_interruption_does_not_cleanup(testdir):
+    server_path = Path(__file__).parent.joinpath("server.py").absolute()
+    testdir.makepyfile(
+        """
+        import sys
+        import socket
+        from xprocess import ProcessStarter
+
+        def test_servers_start(request, xprocess):
+            port = 6990
+            server_path = %r
+
+            class Starter(ProcessStarter):
+                pattern = "started"
+                args = [sys.executable, server_path, port]
+
+            xprocess.ensure("server_test_interrupt_no_terminate", Starter)
+
+            raise KeyboardInterrupt
+        """
+        % str(server_path)
+    )
+    result = testdir.runpytest_subprocess()
+    result.stdout.fnmatch_lines("*KeyboardInterrupt*")
+    result = testdir.runpytest("--xshow")
+    result.stdout.fnmatch_lines("*LIVE*")
+    result = testdir.runpytest("--xkill")
+    result.stdout.fnmatch_lines("*TERMINATED*")
