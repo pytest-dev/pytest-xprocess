@@ -141,6 +141,12 @@ internally. Following are two examples:
             # optional, defaults to 50 lines
             max_read_lines = 100
 
+            # When set to True, xprocess will attempt to terminate and
+            # clean-up the resources of started processes upon interruption
+            # during the test run (e.g. SIGINT, CTRL+C or internal errors).
+            # Defaults to False
+            terminate_on_interrupt = True
+
             def startup_check(self):
                 """
                 Optional callback used to check process responsiveness
