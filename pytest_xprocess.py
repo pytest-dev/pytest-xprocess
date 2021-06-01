@@ -64,6 +64,12 @@ def pytest_unconfigure(config):
     else:
         xprocess._clean_up_resources()
 
+    print(
+        "pytest-xprocess reminder::Be sure to terminate the started process by running "
+        "'pytest --xkill' if you have not explicitly done so in your fixture with "
+        "'xprocess.getinfo(<process_name>).terminate()'."
+    )
+
 
 def pytest_configure(config):
     config.pluginmanager.register(InterruptionHandler())

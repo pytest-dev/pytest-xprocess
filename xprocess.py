@@ -267,7 +267,11 @@ class ProcessStarter(ABC):
              line when trying to match pattern before raising TimeoutError.
 
     @cvar max_read_lines: The maximum amount of lines of the log that will be read
-                    before presuming the attached process dead."""
+                    before presuming the attached process dead.
+
+    @cvar terminate_on_interrupt: When set to True, xprocess will attempt to
+    terminate and clean-up the resources of started processes upon interruption
+    during the test run (e.g. SIGINT, CTRL+C or internal errors)."""
 
     env = None
     timeout = 120
