@@ -184,7 +184,7 @@ multiple diferent processes or several instances of the same process.
 
 *Obs*. In the event of an unforeseen exception/interruption when running pytest,
 ``pytest-xprocess`` will attempt to terminate all started processes in order to avoid
-lingering traces of unfinished test runs if terminate_on_interrupt is set to ``True``.
+lingering traces of unfinished test runs if ``terminate_on_interrupt`` is set to ``True``.
 
 Starter Class
 -------------
