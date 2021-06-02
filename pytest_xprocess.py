@@ -1,6 +1,7 @@
 import py
 import pytest
 
+from _internal import getrootdir
 from xprocess import XProcess
 
 
@@ -12,10 +13,6 @@ def pytest_addoption(parser):
     group.addoption(
         "--xshow", action="store_true", help="show status of external process"
     )
-
-
-def getrootdir(config):
-    return config.cache.makedir(".xprocess")
 
 
 def pytest_cmdline_main(config):
@@ -34,20 +31,14 @@ def pytest_cmdline_main(config):
 
 @pytest.fixture(scope="session")
 def xprocess(request):
-    """Return session-scoped XProcess helper to manage long-running
-    processes required for testing.
-    """
+    """yield session-scoped XProcess helper to manage long-running
+    processes required for testing."""
     rootdir = getrootdir(request.config)
-
     with XProcess(request.config, rootdir) as xproc:
+        # pass in xprocess object into pytest_unconfigure
+        # through config for proper cleanup during teardown
+        request.config._xprocess = xproc
         yield xproc
-
-    """Reading processes exit status is a requirement of subprocess module,
-    so each process instance should be properly waited upon."""
-    for p in xproc.running_procs:
-        p.wait(xproc.proc_wait_timeout)
-
-    request.config._xprocess_file_handles += xproc.file_handles
 
 
 @pytest.mark.hookwrapper
@@ -64,12 +55,51 @@ def pytest_runtest_makereport(item, call):
                 longrepr.addsection("%s log" % name, content)
 
 
-def pytest_configure(config):
-    config.__dict__.setdefault("_xprocess_file_handles", [])
-
-
 def pytest_unconfigure(config):
-    """All logfile handles should be closed by the end of the test run.
-    This is done in order to avoid ResourceWarnings."""
-    for f in config._xprocess_file_handles:
-        f.close()
+    try:
+        xprocess = config._xprocess
+    except AttributeError:
+        # xprocess fixture was not used
+        pass
+    else:
+        xprocess._clean_up_resources()
+
+    print(
+        "pytest-xprocess reminder::Be sure to terminate the started process by running "
+        "'pytest --xkill' if you have not explicitly done so in your fixture with "
+        "'xprocess.getinfo(<process_name>).terminate()'."
+    )
+
+
+def pytest_configure(config):
+    config.pluginmanager.register(InterruptionHandler())
+
+
+class InterruptionHandler:
+    """The purpose of this class is exposing the
+    config object containing references necessary
+    to properly clean-up in the event of an exception
+    during test runs"""
+
+    def pytest_configure(self, config):
+        self.config = config
+
+    def info_objects(self):
+        return self.config._xprocess._info_objects
+
+    def interruption_clean_up(self):
+        try:
+            xprocess = self.config._xprocess
+        except AttributeError:
+            pass
+        else:
+            for info, terminate_on_interrupt in self.info_objects():
+                if terminate_on_interrupt:
+                    info.terminate()
+            xprocess._clean_up_resources()
+
+    def pytest_keyboard_interrupt(self, excinfo):
+        self.interruption_clean_up()
+
+    def pytest_internalerror(self, excrepr, excinfo):
+        self.interruption_clean_up()

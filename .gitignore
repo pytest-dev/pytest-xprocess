@@ -130,4 +130,7 @@ dmypy.json
 
 
 .xprocess/
+
+# editors
 .vscode
+*.swp

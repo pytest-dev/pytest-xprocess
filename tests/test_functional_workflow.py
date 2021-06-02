@@ -22,7 +22,7 @@ def test_functional_work_flow(testdir):
             # required so test won't hang on pytest_unconfigure
             xprocess.proc_wait_timeout = 1
 
-            xprocess.ensure("server", Starter)
+            xprocess.ensure("server_workflow_test", Starter)
 
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect(("localhost", port))

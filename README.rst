@@ -141,6 +141,12 @@ internally. Following are two examples:
             # optional, defaults to 50 lines
             max_read_lines = 100
 
+            # When set to True, xprocess will attempt to terminate and
+            # clean-up the resources of started processes upon interruption
+            # during the test run (e.g. SIGINT, CTRL+C or internal errors).
+            # Defaults to False
+            terminate_on_interrupt = True
+
             def startup_check(self):
                 """
                 Optional callback used to check process responsiveness
@@ -176,6 +182,9 @@ make sure it is running during your testing phase. Also, you are not restricted
 to having a single external process at a time, ``xprocess`` can be used to handle
 multiple diferent processes or several instances of the same process.
 
+*Obs*. In the event of an unforeseen exception/interruption when running pytest,
+``pytest-xprocess`` will attempt to terminate all started processes in order to avoid
+lingering traces of unfinished test runs if ``terminate_on_interrupt`` is set to ``True``.
 
 Starter Class
 -------------
