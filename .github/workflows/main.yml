@@ -1,17 +1,13 @@
 name: build
-
 on: [push, pull_request]
-
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.5", "3.6", "3.7", "3.8"]
-        os: [ubuntu-latest, windows-latest]
+        python: ["3.5", "3.6", "3.7", "3.8", "3.9"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - python: "3.5"
             tox_env: "py35"
@@ -21,11 +17,12 @@ jobs:
             tox_env: "py37"
           - python: "3.8"
             tox_env: "py38"
-
+          - python: "3.9"
+            tox_env: "py39"
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python }}
     - name: Install tox
@@ -35,15 +32,12 @@ jobs:
     - name: Test
       run: |
         tox -e ${{ matrix.tox_env }}
-
   linting:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: "3.8"
     - name: Install tox
@@ -53,18 +47,14 @@ jobs:
     - name: Lint
       run: |
         tox -e linting
-
   deploy:
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-
     runs-on: ubuntu-latest
-
     needs: [build, linting]
-
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: "3.7"
     - name: Install wheel
