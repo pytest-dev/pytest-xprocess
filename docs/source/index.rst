@@ -48,8 +48,9 @@ be up and ``xprocess`` will take care of it for you!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
+   contributing
+   changes
 
 
 Indices and tables
