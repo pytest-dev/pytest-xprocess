@@ -49,6 +49,7 @@ be up and ``xprocess`` will take care of it for you!
 .. toctree::
    :maxdepth: 2
 
+   starter
    contributing
    changes
 
