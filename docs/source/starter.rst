@@ -24,20 +24,12 @@ It's important to note that ``pattern`` is a regular expression and will be matc
     @pytest.fixture
     def myserver(xprocess):
         class Starter(ProcessStarter):
-
             # Here, we assume that our hypothetical process
             # will print the message "server has started"
             # once initialization is done
             pattern = "[Ss]erver has started!"
 
-            args = ['command', 'arg1', 'arg2']
-
-        logfile = xprocess.ensure("myserver", Starter)
-
-        conn = # create a connection or url/port info to the server
-        yield conn
-
-        xprocess.getinfo("myserver").terminate()
+            # ...
 
 
 Controlling Startup Wait Time with ``timeout``
@@ -57,5 +49,36 @@ Some processes naturally take longer to start than others. By default, ``pytest-
         class Starter(ProcessStarter):
             # will wait for 10 seconds before timing out
             timeout = 10
+
+            # ...
+
+
+Telling pytest-xprocess how to start a process with ``args``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to start a process, pytest-xprocess must be given a command to be passed into the `subprocess.Popen constructor <https://docs.python.org/3/library/subprocess.html#popen-constructor>`_. Any arguments passed to the process command can also be passed using ``args``. As an example, if I usually use the following command to start a given process:
+
+``$> myproc -name "bacon" -cores 4 <destdir>``
+
+That would look like:
+
+``args = ['myproc', '-name', '"bacon"', '-cores', 4, '<destdir>']``
+
+when using ``args`` in  ``pytest-xprocess`` to start the same process.
+
+.. code-block:: python
+
+    # content of conftest.py
+
+    import pytest
+    from xprocess import ProcessStarter
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # will pass "$> myproc -name "bacon" -cores 4 <destdir>"  to the
+            # subprocess.Popen constructor so the process can be started with
+            # the given arguments
+            args = ['myproc', '-name', '"bacon"', '-cores', 4, '<destdir>']
 
             # ...
