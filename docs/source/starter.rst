@@ -38,3 +38,24 @@ It's important to note that ``pattern`` is a regular expression and will be matc
         yield conn
 
         xprocess.getinfo("myserver").terminate()
+
+
+Controlling Startup Wait Time with ``timeout``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some processes naturally take longer to start than others. By default, ``pytest-xprocess`` will wait for a maxium of 120 seconds for a given process to start before raising a ``TimeoutError``. Changing this value may be useful, for example, when the user knows that a given process would never take longer than a known amount of time to start under normal circunstances, so if it does go over this known upper boundary, that means something is wrong and the waiting process must be interrupted. The maxium wait time can be controlled thourgh the class variable ``timeout``.
+
+.. code-block:: python
+
+    # content of conftest.py
+
+    import pytest
+    from xprocess import ProcessStarter
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # will wait for 10 seconds before timing out
+            timeout = 10
+
+            # ...
