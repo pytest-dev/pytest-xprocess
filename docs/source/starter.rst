@@ -18,8 +18,7 @@ It's important to note that ``pattern`` is a regular expression and will be matc
 
     # content of conftest.py
 
-    import pytest
-    from xprocess import ProcessStarter
+    import pytest from xprocess import ProcessStarter
 
     @pytest.fixture
     def myserver(xprocess):
@@ -80,5 +79,31 @@ when using ``args`` in  ``pytest-xprocess`` to start the same process.
             # subprocess.Popen constructor so the process can be started with
             # the given arguments
             args = ['myproc', '-name', '"bacon"', '-cores', 4, '<destdir>']
+
+            # ...
+
+
+Limiting number of lines searched for pattern with ``max_read_lines``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the specified string ``patern`` can be found within the first ``n`` outputted lines, there's no reason to search all the remaining output (possibly hundreds of lines or more depending on the process). For that reason, ``pytest-xprocess`` allows the user to limit the maxium number of lines outputted by the process that will be searched for the given pattern with ``max_read_lines``.
+
+If ``max_read_lines`` lines have been searched and ``patern`` has not been found, a ``RuntimeError`` will be raised to let the user know that startup has failed.
+
+When not specified, ``max_read_lines`` will default to 50 lines.
+
+.. code-block:: python
+
+    # content of conftest.py
+
+    import pytest
+    from xprocess import ProcessStarter
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # search the first 12 lines for pattern, if not found
+            # a RuntimeError will be raised informing the user
+            max_read_lines = 12
 
             # ...
