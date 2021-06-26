@@ -16,10 +16,6 @@ It's important to note that ``pattern`` is a regular expression and will be matc
 
 .. code-block:: python
 
-    # content of conftest.py
-
-    import pytest from xprocess import ProcessStarter
-
     @pytest.fixture
     def myserver(xprocess):
         class Starter(ProcessStarter):
@@ -37,11 +33,6 @@ Controlling Startup Wait Time with ``timeout``
 Some processes naturally take longer to start than others. By default, ``pytest-xprocess`` will wait for a maxium of 120 seconds for a given process to start before raising a ``TimeoutError``. Changing this value may be useful, for example, when the user knows that a given process would never take longer than a known amount of time to start under normal circunstances, so if it does go over this known upper boundary, that means something is wrong and the waiting process must be interrupted. The maxium wait time can be controlled thourgh the class variable ``timeout``.
 
 .. code-block:: python
-
-    # content of conftest.py
-
-    import pytest
-    from xprocess import ProcessStarter
 
     @pytest.fixture
     def myserver(xprocess):
@@ -67,11 +58,6 @@ when using ``args`` in  ``pytest-xprocess`` to start the same process.
 
 .. code-block:: python
 
-    # content of conftest.py
-
-    import pytest
-    from xprocess import ProcessStarter
-
     @pytest.fixture
     def myserver(xprocess):
         class Starter(ProcessStarter):
@@ -94,16 +80,51 @@ When not specified, ``max_read_lines`` will default to 50 lines.
 
 .. code-block:: python
 
-    # content of conftest.py
-
-    import pytest
-    from xprocess import ProcessStarter
-
     @pytest.fixture
     def myserver(xprocess):
         class Starter(ProcessStarter):
             # search the first 12 lines for pattern, if not found
             # a RuntimeError will be raised informing the user
             max_read_lines = 12
+
+            # ...
+
+Making sure your process is ready with ``startup_check``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some processes don't have that much console output, so ``pytest-xprocess`` offers a way to double-check that the initialized process is in a query-ready state by allowing the user to define a  callback function ``startup_check``.
+
+When provided, this function  will be called upon to check process responsiveness after ``ProcessStarter.pattern`` has been matched.
+
+By default, ``XProcess.ensure`` will attempt to match ``ProcessStarter.pattern`` when starting a process, if matched, xprocess will consider the process as ready to answer queries. If ``startup_check`` is provided though, its return value will also be considered to determine if the process has been properly started. If ``startup_check`` returns True after ``ProcessStarter.pattern`` has been matched, ``XProcess.ensure`` will return sucessfully. In contrast, if ``startup_check`` does not return ``True`` before timing out, ``XProcess.ensure`` will raise a ``TimeoutError`` exception.
+
+``startup_check`` must return a boolean value (``True`` or ``False``)
+
+.. code-block:: python
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # checks if our server is ready with a ping
+            def startup_check(self):
+                sock = socket.socket()
+                sock.connect(("myhostname", 6777))
+                sock.sendall(b"ping\n")
+                return sock.recv(1) == "pong!"
+            # ...
+
+
+Customizing process execution environment with ``env``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, the execution environment of the main test process will be inherited by the invoked process. But, if desired, it's possible to customize the environment in which the new process will be invoked by providing a mapping containg the desired environment variables and their respective values with ``env``.
+
+.. code-block:: python
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # checks if our server is ready with a ping
+            env = {"PYTHONPATH": str(some_path), "PYTHONUNBUFFERED": "1"}
 
             # ...
