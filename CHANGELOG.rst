@@ -1,17 +1,17 @@
-0.18.0 (UNRELEASED)
+0.18.0 (2021-06-29)
 -------------------
 
-- :class:`ProcessStarter` now has attr:`terminate_on_interrupt`. This flag will
+- :class:`ProcessStarter` now has :attr:`terminate_on_interrupt`. This flag will
   make xprocess attempt to terminate and clean up all started process resources
-  upon interruptions during pytest runs (CTRL+C, SIGINT and internal errors)
+  upon interruptions during pytest runs (`CTRL+C`, `SIGINT` and internal errors)
   when set to `True`. It will default to `False`, so if the described behaviour
   is desired the flag must be explicitly set `True`.
 
 - Add a new `popen_kwargs` variable to `ProcessStarter`, this variable can
   be used for passing keyword values to the `subprocess.Popen` constructor,
-  giving the user more control over the initialized process.
+  giving the user more control over how the process is initialized.
 
-0.17.1 (2020-02-28)
+0.17.1 (2021-02-28)
 -------------------
 
 - Fix `ResourceWarning` in :meth:`XProcess.ensure` caused by not properly
