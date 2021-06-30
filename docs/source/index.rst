@@ -53,11 +53,4 @@ be up and ``xprocess`` will take care of it for you!
    command_line_options
    contributing
    changes
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   contact
