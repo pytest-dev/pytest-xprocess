@@ -26,8 +26,28 @@ class XProcessInfo:
         self.pidpath = self.controldir.join("xprocess.PID")
         self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
+    def _signal_process(self, p, sig):
+        try:
+            p.send_signal(sig)
+        except psutil.NoSuchProcess:
+            pass
+
     def terminate(self, *, kill_proc_tree=True, timeout=20):
         """Recursively terminates process tree.
+
+         Attempt graceful termination starting by leaves of process tree.
+
+         A ─┐
+            │
+            ├─ B (child) ─┐
+            │             └─ X (grandchild) ─┐
+            │                                └─ Y (great grandchild)
+            ├─ C (child)
+            └─ D (child)
+
+         1. kill_list = [A, B, X, Y, C, D]
+         2. reversed(kill_list) = [D, C, Y, X, B, A]
+         3. terminated reversed kill_list
 
         This is the default behavior unless explicitly disabled by setting
         kill_proc_tree keyword-only parameter to false when calling
@@ -56,18 +76,19 @@ class XProcessInfo:
                 kill_list += parent.children(recursive=True)
 
             # attempt graceful termination first
-            for p in kill_list:
-                p.send_signal(signal.SIGTERM)
-            _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+            for p in reversed(kill_list):
+                self._signal_process(p, signal.SIGTERM)
+            terminated, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
             # forcefuly terminate procs still running
             for p in alive:
-                p.send_signal(signal.SIGKILL)
-            _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+                self._signal_process(p, signal.SIGKILL)
+            terminated, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
             if alive:  # pragma: no cover
                 return -1
-        except (psutil.Error, ValueError):
+        except (psutil.Error, ValueError) as err:
+            print("Process tree termination error: {}".format(err))
             return -1
 
         self._termination_signal = True
