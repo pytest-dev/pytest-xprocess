@@ -3,9 +3,8 @@
 
 - :method:`ProcessInfo.terminate` will now terminate outer leaves in process
   tree first and work its way towards root process. For example, if a process
-  has child, grandchild and great grandchild the order of termination will be:
-  greate grandchild, grandchild, child and only then will the root process
-  receive a termination signal.
+  has child and grandchild, xprocess will terminate first child and grandchild
+  and only then will the root process receive a termination signal.
 
 - :class:`ProcessStarter` now has attr:`terminate_on_interrupt`. This flag will
   make xprocess attempt to terminate and clean up all started process resources
