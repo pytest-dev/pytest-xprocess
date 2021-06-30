@@ -85,16 +85,18 @@ class XProcessInfo:
                 self._signal_process(p, signal.SIGKILL)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
+            # even if termination itself fails,
+            # the signal has been sent to the process
+            self._termination_signal = True
+
             if alive:  # pragma: no cover
                 print("could not terminated process {}".format(alive))
                 return -1
         except (psutil.Error, ValueError) as err:
-            print("Process tree termination error: {}".format(err))
+            print("Error while terminating process {}".format(err))
             return -1
-
-        self._termination_signal = True
-
-        return 1
+        else:
+            return 1
 
     def isrunning(self, ignore_zombies=True):
         """Returns whether the process is running or not.
