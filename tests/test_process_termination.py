@@ -9,11 +9,11 @@ from xprocess import ProcessStarter
 server_path = Path(__file__).parent.joinpath("server.py").absolute()
 
 
-@pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_clean_shutdown(port, proc_name, xprocess):
+@pytest.mark.parametrize("proc_name", ["s1", "s2", "s3"])
+def test_clean_shutdown(tcp_port, proc_name, xprocess):
     class Starter(ProcessStarter):
         pattern = "started"
-        args = [sys.executable, server_path, port]
+        args = [sys.executable, server_path, tcp_port]
 
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
@@ -24,11 +24,11 @@ def test_clean_shutdown(port, proc_name, xprocess):
         assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
 
 
-@pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_terminate_no_pid(port, proc_name, xprocess):
+@pytest.mark.parametrize("proc_name", ["s1", "s2", "s3"])
+def test_terminate_no_pid(tcp_port, proc_name, xprocess):
     class Starter(ProcessStarter):
         pattern = "started"
-        args = [sys.executable, server_path, port]
+        args = [sys.executable, server_path, tcp_port]
 
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
@@ -40,11 +40,11 @@ def test_terminate_no_pid(port, proc_name, xprocess):
     info.terminate()
 
 
-@pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_terminate_only_parent(port, proc_name, xprocess):
+@pytest.mark.parametrize("proc_name", ["s1", "s2", "s3"])
+def test_terminate_only_parent(tcp_port, proc_name, xprocess):
     class Starter(ProcessStarter):
         pattern = "started"
-        args = [sys.executable, server_path, port]
+        args = [sys.executable, server_path, tcp_port]
 
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
@@ -62,13 +62,13 @@ def test_terminate_only_parent(port, proc_name, xprocess):
     sys.platform == "win32",
     reason="on windows SIGTERM is treated as an alias for kill()",
 )
-@pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_sigkill_after_failed_sigterm(port, proc_name, xprocess):
+@pytest.mark.parametrize("proc_name", ["s1", "s2", "s3"])
+def test_sigkill_after_failed_sigterm(tcp_port, proc_name, xprocess):
     # explicitly tell xprocess_starter fixture to make
     # server instance ignore SIGTERM
     class Starter(ProcessStarter):
         pattern = "started"
-        args = [sys.executable, server_path, port, "--ignore-sigterm"]
+        args = [sys.executable, server_path, tcp_port, "--ignore-sigterm"]
 
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
@@ -80,11 +80,11 @@ def test_sigkill_after_failed_sigterm(port, proc_name, xprocess):
     )
 
 
-@pytest.mark.parametrize("port,proc_name", [(6777, "s1"), (6778, "s2"), (6779, "s3")])
-def test_return_value_on_failure(port, proc_name, xprocess):
+@pytest.mark.parametrize("proc_name", ["s1", "s2", "s3"])
+def test_return_value_on_failure(tcp_port, proc_name, xprocess):
     class Starter(ProcessStarter):
         pattern = "started"
-        args = [sys.executable, server_path, port]
+        args = [sys.executable, server_path, tcp_port]
 
     xprocess.ensure(proc_name, Starter)
     info = xprocess.getinfo(proc_name)
