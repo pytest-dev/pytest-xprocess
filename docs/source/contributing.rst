@@ -1,3 +1,5 @@
+.. _contributring:
+
 How to contribute
 =================
 
@@ -94,17 +96,6 @@ To run the full test suite for all supported python versions
         $ tox
 
 Obs. CI will run tox when you submit your pull request, so this is optional.
-
-How to build docs
-~~~~~~~~~~~~~~~~~
-
-The docs can be built using ``tox`` with the following command
-
-    .. code-block:: text
-
-        $ tox -e docs
-
-This will  generated the documentation in html format and save everything inside  ``docs/build``. To open it, just open file ``docs/build/index.html`` using your browser.
 
 Checking Test Coverage
 ~~~~~~~~~~~~~~~~~~~~~~~
