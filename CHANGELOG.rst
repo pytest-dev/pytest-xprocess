@@ -17,7 +17,7 @@
   be used for passing keyword values to the `subprocess.Popen` constructor,
   giving the user more control over the initialized process.
 
-0.17.1 (2020-02-28)
+0.17.1 (2021-02-28)
 -------------------
 
 - Fix `ResourceWarning` in :meth:`XProcess.ensure` caused by not properly
