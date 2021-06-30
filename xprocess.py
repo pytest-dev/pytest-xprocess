@@ -78,14 +78,15 @@ class XProcessInfo:
             # attempt graceful termination first
             for p in reversed(kill_list):
                 self._signal_process(p, signal.SIGTERM)
-            terminated, alive = psutil.wait_procs(kill_list, timeout=timeout)
+            _, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
             # forcefuly terminate procs still running
             for p in alive:
                 self._signal_process(p, signal.SIGKILL)
-            terminated, alive = psutil.wait_procs(kill_list, timeout=timeout)
+            _, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
             if alive:  # pragma: no cover
+                print("could not terminated process {}".format(alive))
                 return -1
         except (psutil.Error, ValueError) as err:
             print("Process tree termination error: {}".format(err))

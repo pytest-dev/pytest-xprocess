@@ -19,7 +19,7 @@ def test_clean_shutdown(port, proc_name, xprocess):
     info = xprocess.getinfo(proc_name)
     assert info.isrunning()
     children = psutil.Process(info.pid).children()
-    assert info.terminate()
+    assert info.terminate() == 1
     for child in children:
         assert not child.is_running() or child.status() == psutil.STATUS_ZOMBIE
 
