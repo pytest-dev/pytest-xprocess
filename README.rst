@@ -1,6 +1,8 @@
 pytest-xprocess
 ===============
 
+A pytest plugin for managing external processes across test runs.
+
 .. image:: https://img.shields.io/maintenance/yes/2021?color=blue
     :target: https://github.com/pytest-dev/pytest-xprocess
     :alt: Maintenance
@@ -49,15 +51,10 @@ pytest-xprocess
    :target: https://github.com/ambv/black
    :alt: style
 
-`pytest <https://docs.pytest.org/en/latest>`_ plugin for managing processes
-across test runs.
-
-A pytest plugin for managing external processes.
-
 -   Documentation: https://pytest-xprocess.readthedocs.io/
 -   Changelog: https://pytest-xprocess.readthedocs.io/changes.html/
 -   PyPI Releases: https://pypi.org/project/pytest-xprocess/
 -   Source Code: https://github.com/pytest-dev/pytest-xprocess
 -   Issue Tracker: https://github.com/pytest-dev/pytest-xprocess/issues/
--   Pytest IRC channel: ircs://irc.libera.chat:6697/#pytest
+-   Pytest IRC channel: `irc.libera.chat:6697/#pytest <ircs://irc.libera.chat:6697/#pytest>`_
 -   Pytest Discord Channel: https://discord.gg/k7F2ZFvJV3
