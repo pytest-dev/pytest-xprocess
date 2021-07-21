@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def test_functional_work_flow(testdir):
+def test_functional_work_flow(testdir, tcp_port):
     server_path = Path(__file__).parent.joinpath("server.py").absolute()
     testdir.makepyfile(
         """
@@ -10,7 +10,7 @@ def test_functional_work_flow(testdir):
         from xprocess import ProcessStarter
 
         def test_server(request, xprocess):
-            port = 6776
+            port = %r
             data = "spam\\n"
             server_path = %r
 
@@ -30,7 +30,7 @@ def test_functional_work_flow(testdir):
                 received = str(sock.recv(1024), "utf-8")
                 assert received == data.upper()
     """
-        % str(server_path)
+        % (tcp_port, str(server_path))
     )
     result = testdir.runpytest()
     result.stdout.fnmatch_lines("*1 passed*")

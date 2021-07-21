@@ -33,6 +33,7 @@ def pytest_cmdline_main(config):
 def xprocess(request):
     """yield session-scoped XProcess helper to manage long-running
     processes required for testing."""
+
     rootdir = getrootdir(request.config)
     with XProcess(request.config, rootdir) as xproc:
         # pass in xprocess object into pytest_unconfigure

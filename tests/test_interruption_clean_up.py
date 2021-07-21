@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def test_interruption_cleanup(testdir):
+def test_interruption_cleanup(testdir, tcp_port):
     server_path = Path(__file__).parent.joinpath("server.py").absolute()
     testdir.makepyfile(
         """
@@ -10,7 +10,7 @@ def test_interruption_cleanup(testdir):
         from xprocess import ProcessStarter
 
         def test_servers_start(request, xprocess):
-            port = 6999
+            port = %r
             server_path = %r
 
             class Starter(ProcessStarter):
@@ -22,7 +22,7 @@ def test_interruption_cleanup(testdir):
 
             raise KeyboardInterrupt
         """
-        % str(server_path)
+        % (tcp_port, str(server_path))
     )
     result = testdir.runpytest_subprocess()
     result.stdout.fnmatch_lines("*KeyboardInterrupt*")
@@ -30,7 +30,7 @@ def test_interruption_cleanup(testdir):
     result.stdout.no_fnmatch_line("*LIVE*")
 
 
-def test_interruption_does_not_cleanup(testdir):
+def test_interruption_does_not_cleanup(testdir, tcp_port):
     server_path = Path(__file__).parent.joinpath("server.py").absolute()
     testdir.makepyfile(
         """
@@ -39,7 +39,7 @@ def test_interruption_does_not_cleanup(testdir):
         from xprocess import ProcessStarter
 
         def test_servers_start(request, xprocess):
-            port = 6990
+            port = %r
             server_path = %r
 
             class Starter(ProcessStarter):
@@ -50,7 +50,7 @@ def test_interruption_does_not_cleanup(testdir):
 
             raise KeyboardInterrupt
         """
-        % str(server_path)
+        % (tcp_port, str(server_path))
     )
     result = testdir.runpytest_subprocess()
     result.stdout.fnmatch_lines("*KeyboardInterrupt*")

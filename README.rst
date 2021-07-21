@@ -72,7 +72,7 @@ Useful Links
 --------------
 
 -   Documentation: https://pytest-xprocess.readthedocs.io/
--   Changelog: https://pytest-xprocess.readthedocs.io/changes.html/
+-   Changelog: https://pytest-xprocess.readthedocs.io/en/latest/changes.html
 -   PyPI Releases: https://pypi.org/project/pytest-xprocess/
 -   Source Code: https://github.com/pytest-dev/pytest-xprocess
 -   Issue Tracker: https://github.com/pytest-dev/pytest-xprocess/issues/
