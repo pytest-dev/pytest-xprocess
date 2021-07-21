@@ -26,8 +26,28 @@ class XProcessInfo:
         self.pidpath = self.controldir.join("xprocess.PID")
         self.pid = int(self.pidpath.read()) if self.pidpath.check() else None
 
+    def _signal_process(self, p, sig):
+        try:
+            p.send_signal(sig)
+        except psutil.NoSuchProcess:
+            pass
+
     def terminate(self, *, kill_proc_tree=True, timeout=20):
         """Recursively terminates process tree.
+
+         Attempt graceful termination starting by leaves of process tree.
+
+         A ─┐
+            │
+            ├─ B (child) ─┐
+            │             └─ X (grandchild) ─┐
+            │                                └─ Y (great grandchild)
+            ├─ C (child)
+            └─ D (child)
+
+         1. kill_list = [A, B, X, Y, C, D]
+         2. reversed(kill_list) = [D, C, Y, X, B, A]
+         3. terminated reversed kill_list
 
         This is the default behavior unless explicitly disabled by setting
         kill_proc_tree keyword-only parameter to false when calling
@@ -43,6 +63,7 @@ class XProcessInfo:
             0   no work to do
             1   terminated
             -1  failed to terminate"""
+
         if not self.pid:
             return 0
         try:
@@ -56,23 +77,27 @@ class XProcessInfo:
                 kill_list += parent.children(recursive=True)
 
             # attempt graceful termination first
-            for p in kill_list:
-                p.send_signal(signal.SIGTERM)
+            for p in reversed(kill_list):
+                self._signal_process(p, signal.SIGTERM)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
             # forcefuly terminate procs still running
             for p in alive:
-                p.send_signal(signal.SIGKILL)
+                self._signal_process(p, signal.SIGKILL)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
+            # even if termination itself fails,
+            # the signal has been sent to the process
+            self._termination_signal = True
+
             if alive:  # pragma: no cover
+                print("could not terminated process {}".format(alive))
                 return -1
-        except (psutil.Error, ValueError):
+        except (psutil.Error, ValueError) as err:
+            print("Error while terminating process {}".format(err))
             return -1
-
-        self._termination_signal = True
-
-        return 1
+        else:
+            return 1
 
     def isrunning(self, ignore_zombies=True):
         """Returns whether the process is running or not.
@@ -82,6 +107,7 @@ class XProcessInfo:
                                will become a zombie process during pytest's lifetime.
 
         @return: ``True`` if the process is running, ``False`` if it is not."""
+
         if self.pid is None:
             return False
         try:
@@ -128,6 +154,7 @@ class XProcess:
 
     def getinfo(self, name):
         """Return Process Info for the given external process."""
+
         return XProcessInfo(self.rootdir, name)
 
     def ensure(self, name, preparefunc, restart=False):
@@ -145,6 +172,7 @@ class XProcess:
         @return: (PID, logfile) logfile will be seeked to the end if the
                  server was running, otherwise seeked to the line after
                  where the waitpattern matched."""
+
         from subprocess import Popen, STDOUT
 
         info = self.getinfo(name)
@@ -295,12 +323,14 @@ class ProcessStarter(ABC):
 
     def startup_check(self):
         """Used to assert process responsiveness after pattern match"""
+
         return True
 
     def wait_callback(self):
         """Assert that process is ready to answer queries using provided
         callback funtion. Will raise TimeoutError if self.callback does not
         return True before self.timeout seconds"""
+
         while True:
             sleep(0.1)
             if self.startup_check():
@@ -316,6 +346,7 @@ class ProcessStarter(ABC):
 
     def wait(self, log_file):
         """Wait until the pattern is mached and callback returns successful."""
+
         self._max_time = datetime.now() + timedelta(seconds=self.timeout)
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
         has_match = any(std.re.search(self.pattern, line) for line in lines)
@@ -324,11 +355,13 @@ class ProcessStarter(ABC):
 
     def filter_lines(self, lines):
         """fetch first <max_read_lines>, ignoring blank lines."""
+
         non_empty_lines = (x for x in lines if x.strip())
         return itertools.islice(non_empty_lines, self.max_read_lines)
 
     def log_line(self, line):
         """Write line to process log file."""
+
         self.process.log.debug(line)
         return line
 
@@ -336,6 +369,7 @@ class ProcessStarter(ABC):
         """Read and yield one line at a time from log_file. Will raise
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
+
         while True:
             line = log_file.readline()
 
