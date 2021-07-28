@@ -3,7 +3,6 @@
 
 - Fix bug with previous release where internal module was missing
 
-
 0.18.0 (2021-07-21)
 -------------------
 
