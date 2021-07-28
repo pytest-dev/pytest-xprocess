@@ -1,8 +1,11 @@
 import py
 import pytest
 
-from _internal import getrootdir
 from xprocess import XProcess
+
+
+def getrootdir(config):
+    return config.cache.makedir(".xprocess")
 
 
 def pytest_addoption(parser):
