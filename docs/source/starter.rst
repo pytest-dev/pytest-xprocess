@@ -43,7 +43,7 @@ Some processes naturally take longer to start than others. By default, ``pytest-
             # ...
 
 
-Telling pytest-xprocess how to start a process with ``args``
+ Passing command line arguments to your process with ``args``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to start a process, pytest-xprocess must be given a command to be passed into the `subprocess.Popen constructor <https://docs.python.org/3/library/subprocess.html#popen-constructor>`_. Any arguments passed to the process command can also be passed using ``args``. As an example, if I usually use the following command to start a given process:
@@ -69,8 +69,48 @@ when using ``args`` in  ``pytest-xprocess`` to start the same process.
             # ...
 
 
+Customizing process initialization with ``popen_kwargs``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A ``popen_kwargs`` variable may optionality be set in ``ProcessStarter``. This variable can be used for passing keyword values to the ``subprocess.Popen`` constructor, giving the user more control over how the process is initialized.
+
+.. code-block:: python
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # passing extra keyword values to
+            # sucprocess.Popen constructor
+            popen_kwargs = {
+                "shell": True,
+                "user": "<my_username>",
+                "universal_newlines": True,
+            }
+
+            # ...
+
+
+Automatic clean-up  with ``terminate_on_interrupt``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``ProcessStarter`` has an optional flag ``terminate_on_interrupt``. This flag will
+make xprocess attempt to terminate and clean up all started processes and their
+resources upon interruptions during pytest runs (``CTRL+C``, ``SIGINT`` and internal
+errors) if set to ``True``. The flag will default to ``False``.
+
+.. code-block:: python
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # xprocess will now attempt to
+            # clean up for you upon interruptions
+            terminate_on_interrupt = True
+            # ...
+
+
 Limiting number of lines searched for pattern with ``max_read_lines``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the specified string ``patern`` can be found within the first ``n`` outputted lines, there's no reason to search all the remaining output (possibly hundreds of lines or more depending on the process). For that reason, ``pytest-xprocess`` allows the user to limit the maxium number of lines outputted by the process that will be searched for the given pattern with ``max_read_lines``.
 
