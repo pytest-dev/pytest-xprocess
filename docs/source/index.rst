@@ -50,6 +50,7 @@ be up and ``xprocess`` will take care of it for you!
    :maxdepth: 2
 
    starter
+   info
    command_line_options
    contributing
    changes
