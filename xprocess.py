@@ -132,9 +132,11 @@ class XProcess:
 
         # these will be used to keep all necessary
         # references for proper cleanup before exiting
-        self._info_objects = []
-        self._file_handles = []
-        self._popen_instances = []
+        self._resources = {
+            "info_instances": [],
+            "popen_instances": [],
+            "file_handles": [],
+        }
 
         class Log:
             def debug(self, msg, *args):
@@ -213,22 +215,27 @@ class XProcess:
 
             # keep references of all popen
             # and info objects for cleanup
-            self._info_objects.append((info, starter.terminate_on_interrupt))
-            self._popen_instances.append(Popen(args, **popen_kwargs, **kwargs))
+            self._resources["info_instances"].append(
+                (info, starter.terminate_on_interrupt)
+            )
+            self._resources["popen_instances"].append(
+                Popen(args, **popen_kwargs, **kwargs)
+            )
 
-            info.pid = pid = self._popen_instances[-1].pid
+            info.pid = pid = self._resources["popen_instances"][-1].pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
         # keep track of all file handles so we can
         # cleanup later during teardown phase
-        self._file_handles.append(info.logpath.open())
+        fhandles = self._resources["file_handles"]
+        fhandles.append(info.logpath.open())
 
         if not restart:
-            self._file_handles[-1].seek(0, 2)
+            fhandles[-1].seek(0, 2)
         else:
-            if not starter.wait(self._file_handles[-1]):
+            if not starter.wait(fhandles[-1]):
                 raise RuntimeError(
                     "Could not start process {}, the specified "
                     "log pattern was not found within {} lines.".format(
@@ -238,7 +245,7 @@ class XProcess:
             self.log.debug("%s process startup detected", name)
 
         pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-        pytest_extlogfiles[name] = self._file_handles[-1]
+        pytest_extlogfiles[name] = fhandles[-1]
         self.getinfo(name)
 
         return info.pid, info.logpath
@@ -270,14 +277,16 @@ class XProcess:
     def _clean_up_resources(self):
         # file handles should always be closed
         # in order to avoid ResourceWarnings
-        for f in self._file_handles:
+        for f in self._resources["file_handles"]:
             f.close()
         # XProcessInfo objects and Popen objects have
         # a one to one relation, so we should wait on
         # procs exit status if termination signal has
         # been isued for that particular XProcessInfo
         # Object (subprocess requirement)
-        for (info, _), proc in zip(self._info_objects, self._popen_instances):
+        for (info, _), proc in zip(
+            self._resources["info_instances"], self._resources["popen_instances"]
+        ):
             if info._termination_signal:
                 proc.wait(self.proc_wait_timeout)
 
