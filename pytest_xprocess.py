@@ -89,7 +89,7 @@ class InterruptionHandler:
         self.config = config
 
     def info_objects(self):
-        return self.config._xprocess._resources["info_instances"]
+        return [xrsc.info for xrsc in self.config._xprocess.resources]
 
     def interruption_clean_up(self):
         try:

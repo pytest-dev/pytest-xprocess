@@ -120,6 +120,43 @@ class XProcessInfo:
         )
 
 
+class XProcessResources:
+    """Resources used by a running process.
+    Each time XProcess.ensure is called a single XProcessResources
+    instance will be created and all resources used by the started
+    process will be held by it. Namely: file handle, XProcessInfo
+    and Popen instance.
+    """
+
+    def __init__(self):
+        # handle to the process logfile
+        self.fhandle = None
+        # XProcessInfo holding information on XProcess instance
+        self.info = None
+        # Each XProcess will have a related Popen instance
+        # used for process management through python's
+        # subprocess API
+        self.popen = None
+
+    def release(self, timeout):
+        # file handles should always be closed
+        # in order to avoid ResourceWarnings
+        self.fhandle.close()
+
+        # We should wait on procs exit status if
+        # termination signal has been issued
+        try:
+            if self.info[0]._termination_signal:
+                self.popen.wait(timeout)
+        except TypeError:
+            pass
+
+    def __repr__(self):
+        return "<XProcessResources {}, {}, {}>".format(
+            self.fhandle, self.info, self.popen
+        )
+
+
 class XProcess:
     """Main xprocess class. Represents a running process instance for which
     a set of actions is offered, such as process startup, command line actions
@@ -130,13 +167,9 @@ class XProcess:
         self.rootdir = rootdir
         self.proc_wait_timeout = proc_wait_timeout
 
-        # these will be used to keep all necessary
-        # references for proper cleanup before exiting
-        self._resources = {
-            "info_instances": [],
-            "popen_instances": [],
-            "file_handles": [],
-        }
+        # used to keep all necessary references
+        # for proper cleanup before exiting
+        self.resources = []
 
         class Log:
             def debug(self, msg, *args):
@@ -177,6 +210,8 @@ class XProcess:
 
         from subprocess import Popen, STDOUT
 
+        xresource = XProcessResources()
+
         info = self.getinfo(name)
         if not restart and not info.isrunning():
             restart = True
@@ -215,27 +250,29 @@ class XProcess:
 
             # keep references of all popen
             # and info objects for cleanup
-            self._resources["info_instances"].append(
-                (info, starter.terminate_on_interrupt)
-            )
-            self._resources["popen_instances"].append(
-                Popen(args, **popen_kwargs, **kwargs)
-            )
+            xresource.info = (info, starter.terminate_on_interrupt)
+            xresource.popen = Popen(args, **popen_kwargs, **kwargs)
 
-            info.pid = pid = self._resources["popen_instances"][-1].pid
+            info.pid = pid = xresource.popen.pid
             info.pidpath.write(str(pid))
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
         # keep track of all file handles so we can
         # cleanup later during teardown phase
-        fhandles = self._resources["file_handles"]
-        fhandles.append(info.logpath.open())
+        xresource.fhandle = info.logpath.open()
+
+        self.resources.append(xresource)
+        print(
+            "self.resources at end of ensure function: ",
+            self.resources,
+            file=sys.stderr,
+        )
 
         if not restart:
-            fhandles[-1].seek(0, 2)
+            xresource.fhandle.seek(0, 2)
         else:
-            if not starter.wait(fhandles[-1]):
+            if not starter.wait(xresource.fhandle):
                 raise RuntimeError(
                     "Could not start process {}, the specified "
                     "log pattern was not found within {} lines.".format(
@@ -245,7 +282,7 @@ class XProcess:
             self.log.debug("%s process startup detected", name)
 
         pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-        pytest_extlogfiles[name] = fhandles[-1]
+        pytest_extlogfiles[name] = xresource.fhandle
         self.getinfo(name)
 
         return info.pid, info.logpath
@@ -275,20 +312,9 @@ class XProcess:
         return 0
 
     def _clean_up_resources(self):
-        # file handles should always be closed
-        # in order to avoid ResourceWarnings
-        for f in self._resources["file_handles"]:
-            f.close()
-        # XProcessInfo objects and Popen objects have
-        # a one to one relation, so we should wait on
-        # procs exit status if termination signal has
-        # been isued for that particular XProcessInfo
-        # Object (subprocess requirement)
-        for (info, _), proc in zip(
-            self._resources["info_instances"], self._resources["popen_instances"]
-        ):
-            if info._termination_signal:
-                proc.wait(self.proc_wait_timeout)
+        for xresource in self.resources:
+            print(xresource)
+            xresource.release(self.proc_wait_timeout)
 
 
 class ProcessStarter(ABC):
