@@ -128,7 +128,8 @@ class XProcessResources:
     and Popen instance.
     """
 
-    def __init__(self):
+    def __init__(self, timeout):
+        self.timeout = timeout
         # handle to the process logfile
         self.fhandle = None
         # XProcessInfo holding information on XProcess instance
@@ -138,7 +139,15 @@ class XProcessResources:
         # subprocess API
         self.popen = None
 
-    def release(self, timeout):
+    def __del__(self):
+        self.release()
+
+    def __repr__(self):
+        return "<XProcessResources {}, {}, {}>".format(
+            self.fhandle, self.info, self.popen
+        )
+
+    def release(self):
         # file handles should always be closed
         # in order to avoid ResourceWarnings
         self.fhandle.close()
@@ -147,14 +156,9 @@ class XProcessResources:
         # termination signal has been issued
         try:
             if self.info[0]._termination_signal:
-                self.popen.wait(timeout)
+                self.popen.wait(self.timeout)
         except TypeError:
             pass
-
-    def __repr__(self):
-        return "<XProcessResources {}, {}, {}>".format(
-            self.fhandle, self.info, self.popen
-        )
 
 
 class XProcess:
@@ -210,7 +214,7 @@ class XProcess:
 
         from subprocess import Popen, STDOUT
 
-        xresource = XProcessResources()
+        xresource = XProcessResources(self.proc_wait_timeout)
 
         info = self.getinfo(name)
         if not restart and not info.isrunning():
@@ -311,10 +315,9 @@ class XProcess:
             tw.line(tmpl.format(**locals()))
         return 0
 
-    def _clean_up_resources(self):
+    def _force_clean_up(self):
         for xresource in self.resources:
-            print(xresource)
-            xresource.release(self.proc_wait_timeout)
+            xresource.release()
 
 
 class ProcessStarter(ABC):
