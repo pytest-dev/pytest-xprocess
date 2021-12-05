@@ -60,14 +60,6 @@ def pytest_runtest_makereport(item, call):
 
 
 def pytest_unconfigure(config):
-    try:
-        xprocess = config._xprocess
-    except AttributeError:
-        # xprocess fixture was not used
-        pass
-    else:
-        xprocess._clean_up_resources()
-
     print(
         "pytest-xprocess reminder::Be sure to terminate the started process by running "
         "'pytest --xkill' if you have not explicitly done so in your fixture with "
@@ -89,7 +81,7 @@ class InterruptionHandler:
         self.config = config
 
     def info_objects(self):
-        return self.config._xprocess._info_objects
+        return [xrsc.info for xrsc in self.config._xprocess.resources]
 
     def interruption_clean_up(self):
         try:
@@ -100,7 +92,7 @@ class InterruptionHandler:
             for info, terminate_on_interrupt in self.info_objects():
                 if terminate_on_interrupt:
                     info.terminate()
-            xprocess._clean_up_resources()
+            xprocess._force_clean_up()
 
     def pytest_keyboard_interrupt(self, excinfo):
         self.interruption_clean_up()
