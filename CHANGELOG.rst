@@ -1,4 +1,4 @@
-0.19.0 (UNRELEASED)
+0.19.0 (2021-12-04)
 -------------------
 
 - reorganize internals. ``pytest-xprocess`` is now a package and all resources
