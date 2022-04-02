@@ -1,3 +1,8 @@
+0.19.1 (UNRELEASED)
+-------------------
+
+- drop support for python 3.6
+
 0.19.0 (UNRELEASED)
 -------------------
 
