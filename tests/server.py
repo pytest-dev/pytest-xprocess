@@ -22,7 +22,7 @@ class TestHandler(socketserver.StreamRequestHandler):
 
 
 class TestServer(socketserver.TCPServer):
-    """ This server class is used for testing only"""
+    """This server class is used for testing only"""
 
     allow_reuse_address = True
 
