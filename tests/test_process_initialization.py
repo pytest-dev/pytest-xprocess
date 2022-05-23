@@ -109,10 +109,7 @@ def test_popen_kwargs(tcp_port, proc_name, xprocess):
     info = xprocess.getinfo(proc_name)
     proc = xprocess.resources[-1].popen
 
-    if sys.version_info < (3, 7):
-        text_mode = proc.universal_newlines
-    else:
-        text_mode = proc.text_mode
+    text_mode = proc.text_mode
 
     assert info.isrunning()
     assert text_mode

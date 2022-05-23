@@ -49,7 +49,7 @@ class TestServer(socketserver.TCPServer):
     def write_complex_strings(self):
         """Special/control characters should not cause problems"""
         for i in range(5):
-            sys.stderr.write("{} , % /.%,@%@._%%# #/%/ %\n".format(i))
+            sys.stderr.write(f"{i} , % /.%,@%@._%%# #/%/ %\n")
 
     def write_blank_lines(self):
         """Blank lines should be igored by xprocess"""

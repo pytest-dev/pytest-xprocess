@@ -91,10 +91,10 @@ class XProcessInfo:
             self._termination_signal = True
 
             if alive:  # pragma: no cover
-                print("could not terminated process {}".format(alive))
+                print(f"could not terminated process {alive}")
                 return -1
         except (psutil.Error, ValueError) as err:
-            print("Error while terminating process {}".format(err))
+            print(f"Error while terminating process {err}")
             return -1
         else:
             return 1
