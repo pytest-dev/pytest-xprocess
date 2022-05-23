@@ -3,10 +3,6 @@ pytest-xprocess
 
 A pytest plugin for managing external processes across test runs.
 
-.. image:: https://img.shields.io/maintenance/yes/2021?color=blue
-    :target: https://github.com/pytest-dev/pytest-xprocess
-    :alt: Maintenance
-
 .. image:: https://img.shields.io/github/last-commit/pytest-dev/pytest-xprocess?color=blue
     :target: https://github.com/pytest-dev/pytest-xprocess/commits/master
     :alt: GitHub last commit
