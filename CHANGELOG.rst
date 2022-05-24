@@ -1,4 +1,4 @@
-0.19.0 (UNRELEASED)
+0.19.0 (2022-05-23)
 -------------------
 
 - drop support for python 3.5 and 3.6
