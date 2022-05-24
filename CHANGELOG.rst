@@ -1,9 +1,9 @@
-0.19.0 (2022-04-16)
+0.19.0 (UNRELEASED)
 -------------------
 
+- drop support for python 3.5 and 3.6
 - reorganize internals. ``pytest-xprocess`` is now a package and all resources
   used by running processes are kept as instances of :class:``XProcessResources``.
-
 
 0.18.1 (2021-07-27)
 -------------------
