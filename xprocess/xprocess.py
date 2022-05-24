@@ -267,11 +267,6 @@ class XProcess:
         xresource.fhandle = info.logpath.open()
 
         self.resources.append(xresource)
-        print(
-            "self.resources at end of ensure function: ",
-            self.resources,
-            file=sys.stderr,
-        )
 
         if not restart:
             xresource.fhandle.seek(0, 2)
