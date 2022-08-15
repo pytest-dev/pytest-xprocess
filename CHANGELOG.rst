@@ -1,3 +1,10 @@
+0.20.0 (UNRELEASED)
+-------------------
+
+- cleanup reminders will now only be printed for verbosity
+  levels equal or greater than 1
+
+
 0.19.0 (2022-05-23)
 -------------------
 

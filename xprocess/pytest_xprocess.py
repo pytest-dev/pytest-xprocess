@@ -60,11 +60,13 @@ def pytest_runtest_makereport(item, call):
 
 
 def pytest_unconfigure(config):
-    print(
-        "pytest-xprocess reminder::Be sure to terminate the started process by running "
-        "'pytest --xkill' if you have not explicitly done so in your fixture with "
-        "'xprocess.getinfo(<process_name>).terminate()'."
-    )
+    verbosity_level = config.getoption("verbose")
+    if verbosity_level >= 1:
+        print(
+            "pytest-xprocess reminder::Be sure to terminate the started process "
+            "by running 'pytest --xkill' if you have not explicitly done so in your "
+            "fixture with 'xprocess.getinfo(<process_name>).terminate()'."
+        )
 
 
 def pytest_configure(config):
