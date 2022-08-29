@@ -18,7 +18,7 @@ class TestHandler(socketserver.StreamRequestHandler):
                 self.server._BaseServer__shutdown_request = True
             else:
                 response = line.upper()
-                self.request.sendall(response)
+            self.request.sendall(response)
 
 
 class TestServer(socketserver.TCPServer):
