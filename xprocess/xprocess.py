@@ -32,6 +32,10 @@ class XProcessInfo:
         except psutil.NoSuchProcess:
             pass
 
+    def clear_log_file(self):
+        # truncate file to length zero
+        open(self.logpath, "w").close()
+
     def terminate(self, *, kill_proc_tree=True, timeout=20):
         """Recursively terminates process tree.
 
@@ -229,7 +233,7 @@ class XProcess:
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
-            stdout = open(str(info.logpath), "wb", 0)
+            stdout = open(str(info.logpath), "a+b", 0)
 
             # is env still necessary? we could pass all in popen_kwargs
             kwargs = {"env": starter.env}
@@ -251,6 +255,9 @@ class XProcess:
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
+
+            # start with clean log file every new run
+            info.clear_log_file()
 
             # keep references of all popen
             # and info objects for cleanup
