@@ -1,7 +1,19 @@
+import os
+
 import py
 import pytest
 
 from xprocess import XProcess
+
+
+def get_log_files(root_dir):
+    proc_dirs = [f.path for f in os.scandir(root_dir) if f.is_dir()]
+    return [
+        os.path.join(proc_dir, f)
+        for proc_dir in proc_dirs
+        for f in os.listdir(proc_dir)
+        if f.endswith("log")
+    ]
 
 
 def getrootdir(config):
@@ -42,6 +54,9 @@ def xprocess(request):
         # pass in xprocess object into pytest_unconfigure
         # through config for proper cleanup during teardown
         request.config._xprocess = xproc
+        # start every run with clean log files
+        for log_file in get_log_files(xproc.rootdir):
+            open(log_file, "w").close()
         yield xproc
 
 
