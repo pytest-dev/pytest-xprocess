@@ -1,10 +1,14 @@
+0.21.0 (Unreleased)
+-------------------
+
+- Process log files will not be overwritten for each new process anymore, making it
+  easier to debug issues that occurred in the middle of failed test runs
+
 0.20.0 (2022-08-29)
 -------------------
 
 - Cleanup reminders will now only be printed for verbosity
   levels equal or greater than 1
-- Process log files will not be overwritten for each new process anymore, making it
-  easier to debug issues that occurred in the middle of failed test runs
 
 0.19.0 (2022-05-23)
 -------------------
