@@ -1,4 +1,4 @@
-0.20.0 (UNRELEASED)
+0.20.0 (2022-08-29)
 -------------------
 
 - Cleanup reminders will now only be printed for verbosity
