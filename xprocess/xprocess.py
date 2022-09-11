@@ -419,8 +419,6 @@ class ProcessStarter(ABC):
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
 
-        # seek to marker here
-
         while True:
             line = log_file.readline()
 
