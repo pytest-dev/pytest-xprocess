@@ -13,6 +13,9 @@ import psutil
 from py import std
 
 
+XPROCESS_BLOCK_DELIMITER = "@@__xproc_block_delimiter__@@"
+
+
 class XProcessInfo:
     """Holds information of an active process instance represented by
     a XProcess Object and offers recursive termination functionality of
@@ -31,10 +34,6 @@ class XProcessInfo:
             p.send_signal(sig)
         except psutil.NoSuchProcess:
             pass
-
-    def clear_log_file(self):
-        # truncate file to length zero
-        open(self.logpath, "w").close()
 
     def terminate(self, *, kill_proc_tree=True, timeout=20):
         """Recursively terminates process tree.
@@ -85,7 +84,7 @@ class XProcessInfo:
                 self._signal_process(p, signal.SIGTERM)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
 
-            # forcefuly terminate procs still running
+            # forcefully terminate procs still running
             for p in alive:
                 self._signal_process(p, signal.SIGKILL)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
@@ -234,6 +233,7 @@ class XProcess:
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
             stdout = open(str(info.logpath), "a+b", 0)
+            stdout.write(bytes(f"{XPROCESS_BLOCK_DELIMITER}\n", "utf8"))
 
             # is env still necessary? we could pass all in popen_kwargs
             kwargs = {"env": starter.env}
@@ -256,9 +256,6 @@ class XProcess:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
 
-            # start with clean log file every new run
-            info.clear_log_file()
-
             # keep references of all popen
             # and info objects for cleanup
             xresource.info = (info, starter.terminate_on_interrupt)
@@ -272,6 +269,18 @@ class XProcess:
         # keep track of all file handles so we can
         # cleanup later during teardown phase
         xresource.fhandle = info.logpath.open()
+
+        # skip previous process logs
+        lines = info.logpath.open().readlines()
+        if lines:
+            proc_block_counter = sum(
+                1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
+            )
+            for line in xresource.fhandle:
+                if XPROCESS_BLOCK_DELIMITER in line:
+                    proc_block_counter -= 1
+                if proc_block_counter <= 0:
+                    break
 
         self.resources.append(xresource)
 
@@ -409,6 +418,8 @@ class ProcessStarter(ABC):
         """Read and yield one line at a time from log_file. Will raise
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
+
+        # seek to marker here
 
         while True:
             line = log_file.readline()
