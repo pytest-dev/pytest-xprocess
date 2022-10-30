@@ -112,9 +112,9 @@ errors) if set to ``True``. The flag will default to ``False``.
 Limiting number of lines searched for pattern with ``max_read_lines``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the specified string ``patern`` can be found within the first ``n`` outputted lines, there's no reason to search all the remaining output (possibly hundreds of lines or more depending on the process). For that reason, ``pytest-xprocess`` allows the user to limit the maxium number of lines outputted by the process that will be searched for the given pattern with ``max_read_lines``.
+If the specified string ``pattern`` can be found within the first ``n`` outputted lines, there's no reason to search all the remaining output (possibly hundreds of lines or more depending on the process). For that reason, ``pytest-xprocess`` allows the user to limit the maxium number of lines outputted by the process that will be searched for the given pattern with ``max_read_lines``.
 
-If ``max_read_lines`` lines have been searched and ``patern`` has not been found, a ``RuntimeError`` will be raised to let the user know that startup has failed.
+If ``max_read_lines`` lines have been searched and ``pattern`` has not been found, a ``RuntimeError`` will be raised to let the user know that startup has failed.
 
 When not specified, ``max_read_lines`` will default to 50 lines.
 
