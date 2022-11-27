@@ -1,4 +1,4 @@
-0.21.0 (Unreleased)
+0.21.0 (2022-11-27)
 -------------------
 
 - Explicitly add `py` package as a dependency, fixing issue with `pytest` >= 7.2.0
