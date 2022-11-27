@@ -1,6 +1,7 @@
 0.21.0 (Unreleased)
 -------------------
 
+- Explicitly add `py` package as a dependency, fixing issue with `pytest` >= 7.2.0
 - Process log files will not be overwritten for each new process anymore, making it
   easier to debug issues that occurred in the middle of failed test runs
 
