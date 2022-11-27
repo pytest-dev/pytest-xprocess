@@ -60,7 +60,7 @@ def xprocess(request):
         yield xproc
 
 
-@pytest.mark.hookwrapper
+@pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     logfiles = getattr(item.config, "_extlogfiles", None)
     report = yield
