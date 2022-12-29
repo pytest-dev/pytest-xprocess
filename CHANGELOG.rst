@@ -1,3 +1,9 @@
+Upcoming
+--------
+
+- Ignore zombie processes which are erroneously considered alive with python 3.11
+  (`#117 <https://github.com/pytest-dev/pytest-xprocess/issues/117>`_)
+
 0.21.0 (2022-11-27)
 -------------------
 
