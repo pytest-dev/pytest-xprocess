@@ -83,11 +83,13 @@ class XProcessInfo:
             for p in reversed(kill_list):
                 self._signal_process(p, signal.SIGTERM)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+            alive = [a for a in alive if a.status() != psutil.STATUS_ZOMBIE]
 
             # forcefully terminate procs still running
             for p in alive:
                 self._signal_process(p, signal.SIGKILL)
             _, alive = psutil.wait_procs(kill_list, timeout=timeout)
+            alive = [a for a in alive if a.status() != psutil.STATUS_ZOMBIE]
 
             # even if termination itself fails,
             # the signal has been sent to the process
