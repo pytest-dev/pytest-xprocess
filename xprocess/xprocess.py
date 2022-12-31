@@ -273,7 +273,7 @@ class XProcess:
         xresource.fhandle = info.logpath.open()
 
         # skip previous process logs
-        lines = info.logpath.open().readlines()
+        lines = xresource.fhandle.readlines()
         if lines:
             proc_block_counter = sum(
                 1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
