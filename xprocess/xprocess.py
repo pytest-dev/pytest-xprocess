@@ -202,7 +202,7 @@ class XProcess:
 
         return XProcessInfo(self.rootdir, name)
 
-    def ensure(self, name, preparefunc, restart=False):
+    def ensure(self, name, preparefunc, restart=False, persist_logs=True):
         """Returns (PID, logfile) from a newly started or already
             running process.
 
@@ -217,7 +217,6 @@ class XProcess:
         @return: (PID, logfile) logfile will be seeked to the end if the
                  server was running, otherwise seeked to the line after
                  where the waitpattern matched."""
-
         from subprocess import Popen, STDOUT
 
         xresource = XProcessResources(self.proc_wait_timeout)
@@ -235,8 +234,11 @@ class XProcess:
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
-            stdout = open(str(info.logpath), "a+b", 0)
-            stdout.write(bytes(f"{XPROCESS_BLOCK_DELIMITER}\n", "utf8"))
+            if persist_logs:
+                stdout = open(str(info.logpath), "a+b", 0)
+                stdout.write(bytes(f"{XPROCESS_BLOCK_DELIMITER}\n", "utf8"))
+            else:
+                stdout = open(str(info.logpath), "wb", 0)
 
             # is env still necessary? we could pass all in popen_kwargs
             kwargs = {"env": starter.env}
@@ -269,25 +271,25 @@ class XProcess:
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
-        log_file_handle = info.logpath.open()
-
-        # skip previous process logs
-        process_log_block_handle = info.logpath.open()
-        lines = process_log_block_handle.readlines()
-        if lines:
-            proc_block_counter = sum(
-                1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
-            )
-            for line in log_file_handle:
-                if XPROCESS_BLOCK_DELIMITER in line:
-                    proc_block_counter -= 1
-                if proc_block_counter <= 0:
-                    break
-
+        log_file_handle = open(info.logpath, errors="ignore")
         # keep track of all file handles so we can
         # cleanup later during teardown phase
         xresource.fhandles.append(log_file_handle)
-        xresource.fhandles.append(process_log_block_handle)
+
+        if persist_logs:
+            # skip previous process logs
+            process_log_block_handle = info.logpath.open()
+            lines = process_log_block_handle.readlines()
+            if lines:
+                proc_block_counter = sum(
+                    1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
+                )
+                for line in log_file_handle:
+                    if XPROCESS_BLOCK_DELIMITER in line:
+                        proc_block_counter -= 1
+                    if proc_block_counter <= 0:
+                        break
+            xresource.fhandles.append(process_log_block_handle)
 
         self.resources.append(xresource)
 
