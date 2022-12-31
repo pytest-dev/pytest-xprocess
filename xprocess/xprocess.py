@@ -136,7 +136,7 @@ class XProcessResources:
     def __init__(self, timeout):
         self.timeout = timeout
         # handle to the process logfile
-        self.fhandle = None
+        self.fhandles = []
         # XProcessInfo holding information on XProcess instance
         self.info = None
         # Each XProcess will have a related Popen instance
@@ -149,13 +149,14 @@ class XProcessResources:
 
     def __repr__(self):
         return "<XProcessResources {}, {}, {}>".format(
-            self.fhandle, self.info, self.popen
+            self.fhandles, self.info, self.popen
         )
 
     def release(self):
         # file handles should always be closed
         # in order to avoid ResourceWarnings
-        self.fhandle.close()
+        for fhandle in self.fhandles:
+            fhandle.close()
 
         # We should wait on procs exit status if
         # termination signal has been issued
@@ -268,28 +269,32 @@ class XProcess:
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
-        # keep track of all file handles so we can
-        # cleanup later during teardown phase
-        xresource.fhandle = info.logpath.open()
+        log_file_handle = info.logpath.open()
 
         # skip previous process logs
-        lines = xresource.fhandle.readlines()
+        process_log_block_handle = info.logpath.open()
+        lines = process_log_block_handle.readlines()
         if lines:
             proc_block_counter = sum(
                 1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
             )
-            for line in xresource.fhandle:
+            for line in log_file_handle:
                 if XPROCESS_BLOCK_DELIMITER in line:
                     proc_block_counter -= 1
                 if proc_block_counter <= 0:
                     break
 
+        # keep track of all file handles so we can
+        # cleanup later during teardown phase
+        xresource.fhandles.append(log_file_handle)
+        xresource.fhandles.append(process_log_block_handle)
+
         self.resources.append(xresource)
 
         if not restart:
-            xresource.fhandle.seek(0, 2)
+            log_file_handle.seek(0, 2)
         else:
-            if not starter.wait(xresource.fhandle):
+            if not starter.wait(log_file_handle):
                 raise RuntimeError(
                     "Could not start process {}, the specified "
                     "log pattern was not found within {} lines.".format(
@@ -299,7 +304,7 @@ class XProcess:
             self.log.debug("%s process startup detected", name)
 
         pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-        pytest_extlogfiles[name] = xresource.fhandle
+        pytest_extlogfiles[name] = log_file_handle
         self.getinfo(name)
 
         return info.pid, info.logpath
