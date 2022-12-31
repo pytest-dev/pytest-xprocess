@@ -1,6 +1,7 @@
-Upcoming
---------
+0.22.0 (UNRELEASED)
+-------------------
 
+- Fix resource warnings due to leaked internal file handles (`#121 <https://github.com/pytest-dev/pytest-xprocess/issues/119>`_)
 - Ignore zombie processes which are erroneously considered alive with python 3.11
   (`#117 <https://github.com/pytest-dev/pytest-xprocess/issues/117>`_)
 
