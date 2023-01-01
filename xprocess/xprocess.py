@@ -202,7 +202,7 @@ class XProcess:
 
         return XProcessInfo(self.rootdir, name)
 
-    def ensure(self, name, preparefunc, restart=False, persist_logs=False):
+    def ensure(self, name, preparefunc, restart=False, persist_logs=True):
         """Returns (PID, logfile) from a newly started or already
             running process.
 
