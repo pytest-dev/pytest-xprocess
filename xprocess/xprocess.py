@@ -287,7 +287,7 @@ class XProcess:
                     1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
                 )
                 for line in log_file_handle:
-                    if XPROCESS_BLOCK_DELIMITER in line:
+                    if XPROCESS_BLOCK_DELIMITER in str(line, "utf-8"):
                         proc_block_counter -= 1
                     if proc_block_counter <= 0:
                         break
