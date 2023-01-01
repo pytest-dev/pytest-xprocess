@@ -9,3 +9,5 @@ __all__ = [
     "XProcessResources",
     "XProcessInfo",
 ]
+
+__version__ = "0.22.0"
