@@ -271,21 +271,23 @@ class XProcess:
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
-        log_file_handle = open(info.logpath, errors="ignore")
+        log_file_handle = open(info.logpath, "rb")
         # keep track of all file handles so we can
         # cleanup later during teardown phase
         xresource.fhandles.append(log_file_handle)
 
         if persist_logs:
             # skip previous process logs
-            process_log_block_handle = info.logpath.open()
-            lines = process_log_block_handle.readlines()
+            process_log_block_handle = open(info.logpath, "rb")
+            lines = [
+                str(line, "utf-8") for line in process_log_block_handle.readlines()
+            ]
             if lines:
                 proc_block_counter = sum(
                     1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
                 )
                 for line in log_file_handle:
-                    if XPROCESS_BLOCK_DELIMITER in line:
+                    if XPROCESS_BLOCK_DELIMITER in str(line, "utf-8"):
                         proc_block_counter -= 1
                     if proc_block_counter <= 0:
                         break
@@ -381,14 +383,12 @@ class ProcessStarter(ABC):
 
     def startup_check(self):
         """Used to assert process responsiveness after pattern match"""
-
         return True
 
     def wait_callback(self):
         """Assert that process is ready to answer queries using provided
         callback funtion. Will raise TimeoutError if self.callback does not
         return True before self.timeout seconds"""
-
         while True:
             sleep(0.1)
             if self.startup_check():
@@ -404,7 +404,6 @@ class ProcessStarter(ABC):
 
     def wait(self, log_file):
         """Wait until the pattern is mached and callback returns successful."""
-
         self._max_time = datetime.now() + timedelta(seconds=self.timeout)
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
         has_match = any(std.re.search(self.pattern, line) for line in lines)
@@ -413,13 +412,11 @@ class ProcessStarter(ABC):
 
     def filter_lines(self, lines):
         """fetch first <max_read_lines>, ignoring blank lines."""
-
         non_empty_lines = (x for x in lines if x.strip())
         return itertools.islice(non_empty_lines, self.max_read_lines)
 
     def log_line(self, line):
         """Write line to process log file."""
-
         self.process.log.debug(line)
         return line
 
@@ -427,9 +424,8 @@ class ProcessStarter(ABC):
         """Read and yield one line at a time from log_file. Will raise
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
-
         while True:
-            line = log_file.readline()
+            line = str(log_file.readline(), "utf-8")
 
             if not line:
                 std.time.sleep(0.1)
