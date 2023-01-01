@@ -1,7 +1,8 @@
-0.22.0 (2023-01-01)
+0.22.1 (2023-01-01)
 -------------------
 
 - Python 3.10 is now officially supported
+- Improve internals by working only with byte streams as opposed to having file handles with both byte and string streams. See `#125 <https://github.com/pytest-dev/pytest-xprocess/pull/125>`_ for details
 - Make log files persistency, added in `0.21.0`, optional, defaulting to True. The previous logging behavior (prior to `0.21.0`) can be enabled by setting `persist_logs` flag to `False` when calling `XProcess.ensure`. (`#122 <https://github.com/pytest-dev/pytest-xprocess/issues/120>`_)
 - Fix resource warnings due to leaked internal file handles (`#121 <https://github.com/pytest-dev/pytest-xprocess/issues/119>`_)
 - Ignore zombie processes which are erroneously considered alive with python 3.11
