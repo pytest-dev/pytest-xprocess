@@ -278,16 +278,24 @@ class XProcess:
 
         if persist_logs:
             # skip previous process logs
+            lines = []
             process_log_block_handle = open(info.logpath, "rb")
-            lines = [
-                str(line, "utf-8") for line in process_log_block_handle.readlines()
-            ]
+            for line in process_log_block_handle:
+                try:
+                    decoded_line = str(line, "utf-8")
+                except UnicodeDecodeError:
+                    continue
+                lines.append(decoded_line)
             if lines:
                 proc_block_counter = sum(
                     1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
                 )
                 for line in log_file_handle:
-                    if XPROCESS_BLOCK_DELIMITER in str(line, "utf-8"):
+                    try:
+                        decoded_line = str(line, "utf-8")
+                    except UnicodeDecodeError:
+                        continue
+                    if XPROCESS_BLOCK_DELIMITER in decoded_line:
                         proc_block_counter -= 1
                     if proc_block_counter <= 0:
                         break
@@ -425,11 +433,9 @@ class ProcessStarter(ABC):
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
         while True:
-            line = str(log_file.readline(), "utf-8")
-
+            line = log_file.readline()
             if not line:
                 std.time.sleep(0.1)
-
             if datetime.now() > self._max_time:
                 raise TimeoutError(
                     "The provided start pattern {} could not be matched \
@@ -437,5 +443,8 @@ class ProcessStarter(ABC):
                         self.pattern, self.timeout
                     )
                 )
-
-            yield line
+            try:
+                decoded_line = str(line, "utf-8")
+            except UnicodeDecodeError:
+                continue
+            yield decoded_line
