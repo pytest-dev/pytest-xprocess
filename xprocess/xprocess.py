@@ -291,14 +291,17 @@ class XProcess:
         return info.pid, info.logpath
 
     def _skip_previous_log_blocks(self, log_block_handle, log_file_handle):
-        lines = [str(line, "utf-8") for line in log_block_handle]
+        lines = [
+            line.decode("utf-8", errors="surrogateescape") for line in log_block_handle
+        ]
         if not lines:  # cut it short if nothing to skip
             return
         proc_block_counter = sum(
             1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
         )
         for line in log_file_handle:
-            if XPROCESS_BLOCK_DELIMITER in str(line, "utf-8"):
+            decoded_line = line.decode("utf-8", errors="surrogateescape")
+            if XPROCESS_BLOCK_DELIMITER in decoded_line:
                 proc_block_counter -= 1
             if proc_block_counter <= 0:
                 break
@@ -425,8 +428,4 @@ class ProcessStarter(ABC):
                         self.pattern, self.timeout
                     )
                 )
-            try:
-                decoded_line = str(line, "utf-8")
-            except UnicodeDecodeError:
-                continue
-            yield decoded_line
+            yield line.decode("utf-8", errors="surrogateescape")
