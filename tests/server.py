@@ -27,33 +27,40 @@ class TestServer(socketserver.TCPServer):
     allow_reuse_address = True
 
     def write_test_patterns(self):
-        self.write_blank_lines()
-        self.write_complex_strings()
-        self.write_non_ascii()
-        sys.stderr.write("started\n")
-        self.write_long_output()
+        self.write_blank_lines(100)
+        self.write_complex_strings(10)
+        self.write_non_ascii(8)
+        sys.stderr.write("started\n")  # 18 line
+        self.write_long_output(100)
+        self.write_garbage_bytes(10)
         sys.stderr.write("finally started\n")
         sys.stderr.flush()
 
-    def write_long_output(self):
+    def write_long_output(self, n):
         """write several lines to test pattern matching
         with process with a lot of output"""
-        for _ in range(50):
+        for _ in range(n):
             sys.stderr.write("spam, bacon, eggs\n")
 
-    def write_non_ascii(self):
+    def write_non_ascii(self, n):
         """non-ascii characters must be supported"""
-        for _ in range(5):
+        for _ in range(n):
             sys.stderr.write("Ê�æ�pP��çîöē�P��adåráøū\n")
 
-    def write_complex_strings(self):
+    def write_garbage_bytes(self, n):
+        """non-mapable bytes characters must not break xprocess"""
+        for _ in range(n):
+            sys.stderr.buffer.write(b"\x90\x81\x91")
+            sys.stderr.write("\n")
+
+    def write_complex_strings(self, n):
         """Special/control characters should not cause problems"""
-        for i in range(5):
+        for i in range(n):
             sys.stderr.write(f"{i} , % /.%,@%@._%%# #/%/ %\n")
 
-    def write_blank_lines(self):
+    def write_blank_lines(self, n):
         """Blank lines should be igored by xprocess"""
-        for _ in range(100):
+        for _ in range(n):
             sys.stderr.write("\n")
 
     def fork_children(self, target, amount):

@@ -50,9 +50,9 @@ def test_ensure_not_restart(tcp_port, proc_name, xprocess):
 @pytest.mark.parametrize(
     "proc_name,proc_pttrn,lines",
     [
-        ("s1", "started", 20),
+        ("s1", "started", 21),
         ("s2", "spam, bacon, eggs", 30),
-        ("s3", "finally started", 62),
+        ("s3", "finally started", 130),
     ],
 )
 def test_startup_detection_max_read_lines(
