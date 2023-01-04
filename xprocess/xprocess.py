@@ -266,13 +266,13 @@ class XProcess:
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
-        log_file_handle = open(info.logpath, "rb")
+        log_file_handle = open(info.logpath, errors="surrogateescape")
         xresource.fhandles.append(log_file_handle)
         pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         pytest_extlogfiles[name] = log_file_handle
 
         if persist_logs:
-            process_log_block_handle = open(info.logpath, "rb")
+            process_log_block_handle = open(info.logpath, errors="surrogateescape")
             xresource.fhandles.append(process_log_block_handle)
             self._skip_previous_log_blocks(process_log_block_handle, log_file_handle)
 
@@ -291,17 +291,14 @@ class XProcess:
         return info.pid, info.logpath
 
     def _skip_previous_log_blocks(self, log_block_handle, log_file_handle):
-        lines = [
-            line.decode("utf-8", errors="surrogateescape") for line in log_block_handle
-        ]
+        lines = [line for line in log_block_handle]
         if not lines:  # cut it short if nothing to skip
             return
         proc_block_counter = sum(
             1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
         )
         for line in log_file_handle:
-            decoded_line = line.decode("utf-8", errors="surrogateescape")
-            if XPROCESS_BLOCK_DELIMITER in decoded_line:
+            if XPROCESS_BLOCK_DELIMITER in line:
                 proc_block_counter -= 1
             if proc_block_counter <= 0:
                 break
@@ -428,4 +425,4 @@ class ProcessStarter(ABC):
                         self.pattern, self.timeout
                     )
                 )
-            yield line.decode("utf-8", errors="surrogateescape")
+            yield line
