@@ -28,28 +28,12 @@ Steps
 
     $ tox
 
-#. Install ``twine``
-
-    $ pip install twine
-
 #. Commit and push the branch for review.
 
-#. Once PR is **green** and **approved**, update `xprocess.__version__`::
+#. Once PR is **green** and **approved**, create and push a tag::
 
-#. Create source distribution and wheel
-
-    $ python setup.py sdist bdist_wheel
-
-#. Check the created distribution files with twine
-
-    $ twine check dist/*
-
-#. Release to test pypi to ensure everything is OK
-
-    $ twine upload -r <testpypi> dist/*
-
-#. Finally, if everything looks fine on test pypi
-
-    $ twine upload -r pypi dist
+    $ export VERSION=X.Y.Z
+    $ git tag $VERSION release-$VERSION
+    $ git push git@github.com:pytest-dev/pytest-xprocess.git $VERSION
 
 #. Merge ``release-X.Y.Z`` branch into master.
