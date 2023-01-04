@@ -1,0 +1,7 @@
+[build-system]
+requires = [
+  "setuptools>=45.0",
+  "setuptools-scm[toml]>=6.2.3",
+]
+
+[tool.setuptools_scm]
