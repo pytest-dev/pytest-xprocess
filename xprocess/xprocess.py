@@ -220,16 +220,19 @@ class XProcess:
         from subprocess import Popen, STDOUT
 
         xresource = XProcessResources(self.proc_wait_timeout)
+        self.resources.append(xresource)
 
         info = self.getinfo(name)
         if not restart and not info.isrunning():
             restart = True
 
         if restart:
-            # ensure the process is terminated first
             if info.pid is not None:
                 info.terminate()
 
+            # TODO: after droping py module, review this and break
+            # it down into more readable chunks, possibly extracting pieces
+            # into internal methods would make things more clear too
             controldir = info.controldir.ensure(dir=1)
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
@@ -239,20 +242,13 @@ class XProcess:
                 stdout.write(bytes(f"{XPROCESS_BLOCK_DELIMITER}\n", "utf8"))
             else:
                 stdout = open(str(info.logpath), "wb", 0)
-
-            # is env still necessary? we could pass all in popen_kwargs
             kwargs = {"env": starter.env}
-
             popen_kwargs = {
                 "cwd": str(controldir),
                 "stdout": stdout,
                 "stderr": STDOUT,
-                # this gives the user the ability to
-                # override the previous keywords if
-                # desired
                 **starter.popen_kwargs,
             }
-
             if sys.platform == "win32":  # pragma: no cover
                 kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
                 sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
@@ -261,8 +257,7 @@ class XProcess:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
 
-            # keep references of all popen
-            # and info objects for cleanup
+            # keep references of all popen and info objects for cleanup
             xresource.info = (info, starter.terminate_on_interrupt)
             xresource.popen = Popen(args, **popen_kwargs, **kwargs)
 
@@ -271,29 +266,15 @@ class XProcess:
             self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
-        log_file_handle = open(info.logpath, "rb")
-        # keep track of all file handles so we can
-        # cleanup later during teardown phase
+        log_file_handle = open(info.logpath, errors="surrogateescape")
         xresource.fhandles.append(log_file_handle)
+        pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
+        pytest_extlogfiles[name] = log_file_handle
 
         if persist_logs:
-            # skip previous process logs
-            process_log_block_handle = open(info.logpath, "rb")
-            lines = [
-                str(line, "utf-8") for line in process_log_block_handle.readlines()
-            ]
-            if lines:
-                proc_block_counter = sum(
-                    1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
-                )
-                for line in log_file_handle:
-                    if XPROCESS_BLOCK_DELIMITER in str(line, "utf-8"):
-                        proc_block_counter -= 1
-                    if proc_block_counter <= 0:
-                        break
+            process_log_block_handle = open(info.logpath, errors="surrogateescape")
             xresource.fhandles.append(process_log_block_handle)
-
-        self.resources.append(xresource)
+            self._skip_previous_log_blocks(process_log_block_handle, log_file_handle)
 
         if not restart:
             log_file_handle.seek(0, 2)
@@ -307,11 +288,20 @@ class XProcess:
                 )
             self.log.debug("%s process startup detected", name)
 
-        pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
-        pytest_extlogfiles[name] = log_file_handle
-        self.getinfo(name)
-
         return info.pid, info.logpath
+
+    def _skip_previous_log_blocks(self, log_block_handle, log_file_handle):
+        lines = [line for line in log_block_handle]
+        if not lines:  # cut it short if nothing to skip
+            return
+        proc_block_counter = sum(
+            1 for line in lines if XPROCESS_BLOCK_DELIMITER in line
+        )
+        for line in log_file_handle:
+            if XPROCESS_BLOCK_DELIMITER in line:
+                proc_block_counter -= 1
+            if proc_block_counter <= 0:
+                break
 
     def _infos(self):
         return (self.getinfo(p.basename) for p in self.rootdir.listdir())
@@ -425,11 +415,9 @@ class ProcessStarter(ABC):
         TimeoutError if pattern is not matched before self.timeout
         seconds."""
         while True:
-            line = str(log_file.readline(), "utf-8")
-
+            line = log_file.readline()
             if not line:
                 std.time.sleep(0.1)
-
             if datetime.now() > self._max_time:
                 raise TimeoutError(
                     "The provided start pattern {} could not be matched \
@@ -437,5 +425,4 @@ class ProcessStarter(ABC):
                         self.pattern, self.timeout
                     )
                 )
-
             yield line

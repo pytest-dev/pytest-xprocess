@@ -56,7 +56,7 @@ def xprocess(request):
         request.config._xprocess = xproc
         # start every run with clean log files
         for log_file in get_log_files(xproc.rootdir):
-            open(log_file, "w").close()
+            open(log_file, errors="surrogateescape").close()
         yield xproc
 
 

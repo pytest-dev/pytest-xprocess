@@ -1,11 +1,12 @@
-0.22.0 (2023-01-01)
+0.22.1 (UNRELEASED)
 -------------------
 
 - Python 3.10 is now officially supported
-- Make log files persistency, added in `0.21.0`, optional, defaulting to True. The previous logging behavior (prior to `0.21.0`) can be enabled by setting `persist_logs` flag to `False` when calling `XProcess.ensure`. (`#122 <https://github.com/pytest-dev/pytest-xprocess/issues/120>`_)
-- Fix resource warnings due to leaked internal file handles (`#121 <https://github.com/pytest-dev/pytest-xprocess/issues/119>`_)
+- `surrogateescape` will now be used as error handling strategy for encode/decode operations. (`#127 <https://github.com/pytest-dev/pytest-xprocess/pull/127>`)
+- Make log files persistency, added in `0.21.0`, optional, defaulting to True. The previous logging behavior (prior to `0.21.0`) can be enabled by setting `persist_logs` flag to `False` when calling `XProcess.ensure`. (`#122 <https://github.com/pytest-dev/pytest-xprocess/pull/122>`_)
+- Fix resource warnings due to leaked internal file handles (`#121 <https://github.com/pytest-dev/pytest-xprocess/pull/121>`_)
 - Ignore zombie processes which are erroneously considered alive with python 3.11
-  (`#117 <https://github.com/pytest-dev/pytest-xprocess/issues/117>`_)
+  (`#117 <https://github.com/pytest-dev/pytest-xprocess/pull/118>`_)
 
 0.21.0 (2022-11-27)
 -------------------
