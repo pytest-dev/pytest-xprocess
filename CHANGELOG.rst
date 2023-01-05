@@ -1,4 +1,4 @@
-0.22.1 (UNRELEASED)
+0.22.2 (2023-01-05)
 -------------------
 
 - Python 3.10 is now officially supported
