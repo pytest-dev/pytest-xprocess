@@ -1,7 +1,7 @@
 import os
 
-import py
 import pytest
+from _pytest._io import TerminalWriter
 
 from xprocess import XProcess
 
@@ -35,7 +35,7 @@ def pytest_cmdline_main(config):
     xshow = config.option.xshow
     if xkill or xshow:
         config._do_configure()
-        tw = py.io.TerminalWriter()
+        tw = TerminalWriter()
         rootdir = getrootdir(config)
         xprocess = XProcess(config, rootdir)
     if xkill:

@@ -1,8 +1,9 @@
-Unreleased
-----------
+0.23.0 (Unreleased)
+-------------------
 
 - Drop support for Python 3.7
 - Add support for Python 3.11
+- Remove dependency on `py`
 
 0.22.2 (2023-01-05)
 -------------------

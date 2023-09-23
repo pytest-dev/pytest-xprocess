@@ -1,7 +1,10 @@
 import itertools
 import os
+import re
 import signal
+import subprocess
 import sys
+import time
 import traceback
 from abc import ABC
 from abc import abstractmethod
@@ -10,7 +13,6 @@ from datetime import timedelta
 from time import sleep
 
 import psutil
-from py import std
 
 
 XPROCESS_BLOCK_DELIMITER = "@@__xproc_block_delimiter__@@"
@@ -250,9 +252,9 @@ class XProcess:
                 **starter.popen_kwargs,
             }
             if sys.platform == "win32":  # pragma: no cover
-                kwargs["startupinfo"] = sinfo = std.subprocess.STARTUPINFO()
-                sinfo.dwFlags |= std.subprocess.STARTF_USESHOWWINDOW
-                sinfo.wShowWindow |= std.subprocess.SW_HIDE
+                kwargs["startupinfo"] = sinfo = subprocess.STARTUPINFO()
+                sinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                sinfo.wShowWindow |= subprocess.SW_HIDE
             else:
                 kwargs["close_fds"] = True
                 kwargs["preexec_fn"] = os.setpgrp  # no CONTROL-C
@@ -396,7 +398,7 @@ class ProcessStarter(ABC):
         """Wait until the pattern is mached and callback returns successful."""
         self._max_time = datetime.now() + timedelta(seconds=self.timeout)
         lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
-        has_match = any(std.re.search(self.pattern, line) for line in lines)
+        has_match = any(re.search(self.pattern, line) for line in lines)
         process_ready = self.wait_callback()
         return has_match and process_ready
 
@@ -417,7 +419,7 @@ class ProcessStarter(ABC):
         while True:
             line = log_file.readline()
             if not line:
-                std.time.sleep(0.1)
+                time.sleep(0.1)
             if datetime.now() > self._max_time:
                 raise TimeoutError(
                     "The provided start pattern {} could not be matched \
