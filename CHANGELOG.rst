@@ -1,4 +1,4 @@
-0.23.0 (Unreleased)
+0.23.0 (2023-09-23)
 -------------------
 
 - Drop support for Python 3.7
