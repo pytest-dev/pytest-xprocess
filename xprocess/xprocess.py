@@ -360,18 +360,20 @@ class ProcessStarter(ABC):
     terminate_on_interrupt = False
 
     def __init__(self, control_dir, process):
+        self._max_time = None
         self.control_dir = control_dir
         self.process = process
 
     @property
     @abstractmethod
     def args(self):
-        "The args to start the process."
+        """The args to start the process."""
+        pass
 
     @property
-    @abstractmethod
     def pattern(self):
-        "The pattern to match when the process has started."
+        """The pattern to match when the process has started."""
+        return None
 
     def startup_check(self):
         """Used to assert process responsiveness after pattern match"""
@@ -397,10 +399,16 @@ class ProcessStarter(ABC):
     def wait(self, log_file):
         """Wait until the pattern is mached and callback returns successful."""
         self._max_time = datetime.now() + timedelta(seconds=self.timeout)
-        lines = map(self.log_line, self.filter_lines(self.get_lines(log_file)))
+        if self.pattern is not None:
+            self.wait_pattern(log_file)
+        return self.wait_callback()
+
+    def wait_pattern(self, log_file):
+        """Wait until the pattern is mached and callback returns successful."""
+        raw_lines = self.get_lines(log_file)
+        lines = map(self.log_line, self.filter_lines(raw_lines))
         has_match = any(re.search(self.pattern, line) for line in lines)
-        process_ready = self.wait_callback()
-        return has_match and process_ready
+        return has_match
 
     def filter_lines(self, lines):
         """fetch first <max_read_lines>, ignoring blank lines."""
