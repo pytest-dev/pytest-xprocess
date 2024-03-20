@@ -115,3 +115,19 @@ def test_popen_kwargs(tcp_port, proc_name, xprocess):
     assert text_mode
 
     info.terminate()
+
+
+@pytest.mark.parametrize("proc_name", ["s1", "s2", "s3"])
+def test_startup_without_pattern(tcp_port, proc_name, xprocess):
+    data = "bacon\n"
+
+    class Starter(ProcessStarter):
+        args = [sys.executable, server_path, tcp_port, "--no-children"]
+
+        def startup_check(self):
+            return request_response_cycle(tcp_port, data)
+
+    xprocess.ensure(proc_name, Starter)
+    info = xprocess.getinfo(proc_name)
+    assert info.isrunning()
+    info.terminate()
