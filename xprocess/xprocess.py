@@ -397,11 +397,25 @@ class ProcessStarter(ABC):
                 )
 
     def wait(self, log_file):
-        """Wait until the pattern is mached and callback returns successful."""
+        """Wait until the pattern is matched or callback returns successful."""
+        has_callback = type(self).startup_check != ProcessStarter.startup_check
+        has_pattern = self.pattern is not None
+        # cut it short, at least one provided way to
+        # know if the process has started
+        if not has_callback and not has_pattern:
+            return False
+        # here we know that at least one of them has been provided
+        pattern_ok, callback_ok = False, False
         self._max_time = datetime.now() + timedelta(seconds=self.timeout)
-        if self.pattern is not None:
-            self.wait_pattern(log_file)
-        return self.wait_callback()
+        if has_pattern:
+            pattern_ok = self.wait_pattern(log_file)
+        if has_callback:
+            callback_ok = self.wait_callback()
+        # when both provided, both should be checked
+        if has_callback and has_pattern:
+            return pattern_ok and callback_ok
+        # one or the other
+        return pattern_ok or callback_ok
 
     def wait_pattern(self, log_file):
         """Wait until the pattern is mached and callback returns successful."""
