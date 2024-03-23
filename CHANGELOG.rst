@@ -1,3 +1,9 @@
+1.0.0 (unreleased)
+------------------
+
+- `ProcessStarter.pattern` is now optional. Users may provide either `ProcessStarter.pattern` or `ProcessStarter.callback` or both.
+
+
 0.23.0 (2023-09-23)
 -------------------
 
@@ -33,7 +39,7 @@
 
 - drop support for python 3.5 and 3.6
 - reorganize internals. ``pytest-xprocess`` is now a package and all resources
-  used by running processes are kept as instances of :class:``XProcessResources``.
+  used by running processes are kept as instances of ``XProcessResources``.
 
 0.18.1 (2021-07-27)
 -------------------
@@ -43,12 +49,12 @@
 0.18.0 (2021-07-21)
 -------------------
 
-- :method:`ProcessInfo.terminate` will now terminate outer leaves in process
+- `ProcessInfo.terminate` will now terminate outer leaves in process
   tree first and work its way towards root process. For example, if a process
   has child and grandchild, xprocess will terminate first child and grandchild
   and only then will the root process receive a termination signal.
 
-- :class:`ProcessStarter` now has attr:`terminate_on_interrupt`. This flag will
+- `ProcessStarter` now has attr:`terminate_on_interrupt`. This flag will
   make xprocess attempt to terminate and clean up all started process resources
   upon interruptions during pytest runs (`CTRL+C`, `SIGINT` and internal errors)
   when set to `True`. It will default to `False`, so if the described behaviour
@@ -67,7 +73,7 @@
 0.17.0 (2020-11-26)
 -------------------
 
-- :class:`ProcessStarter` now has :meth:`startup_check`. This method can be optionaly overridden and will be called upon to check process responsiveness
+- `ProcessStarter` now has :meth:`startup_check`. This method can be optionaly overridden and will be called upon to check process responsiveness
   after :attr:`ProcessStarter.pattern` is matched. By default, :meth:`XProcess.ensure` will only attempt to match :attr:`ProcessStarter.pattern` when starting a process, if matched, xprocess
   will consider the process as ready to answer queries. If :meth:`startup_check` is provided though, its return value will also be considered to determine if the process has been
   successfully started. If :meth:`startup_check` returns `True` after :attr:`ProcessStarter.pattern` has been matched, :meth:`XProcess.ensure` will return sucessfully. In contrast, if
@@ -77,7 +83,7 @@
 0.16.0 (2020-10-29)
 -------------------
 
-- :class:`ProcessStarter` now has a new `timeout` class variable optionaly overridden to define the maximum time :meth:`xprocess.ensure` should wait for process output when trying to match :attr:`ProcessStarter.pattern`. Defaults to 120 seconds.
+- `ProcessStarter` now has a new `timeout` class variable optionaly overridden to define the maximum time :meth:`xprocess.ensure` should wait for process output when trying to match :attr:`ProcessStarter.pattern`. Defaults to 120 seconds.
 - The number of lines in the process logfile watched for :attr:`ProcessStarter.pattern` is now configurable and can be changed by setting :attr:`ProcessStarter.max_read_lines` to the desired value. Defaults to 50 lines.
 - Make :meth:`XProcessInfo.isrunning` ignore zombie processes by default. Pass ``ignore_zombies=False`` to get the previous behavior, which was to consider zombie processes as running.
 
