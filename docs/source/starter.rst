@@ -72,12 +72,11 @@ Some processes naturally take longer to start than others. By default, ``pytest-
         class Starter(ProcessStarter):
             # will wait for 10 seconds before timing out
             timeout = 10
-
             # ...
 
 
- Passing command line arguments to your process with ``args``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Passing command line arguments to your process with ``args``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to start a process, pytest-xprocess must be given a command to be passed into the `subprocess.Popen constructor <https://docs.python.org/3/library/subprocess.html#popen-constructor>`_. Any arguments passed to the process command can also be passed using ``args``. As an example, if I usually use the following command to start a given process:
 
@@ -116,7 +115,7 @@ A ``popen_kwargs`` variable may optionality be set in ``ProcessStarter``. This v
             # sucprocess.Popen constructor
             popen_kwargs = {
                 "shell": True,
-                "user": "<my_username>",
+                "user": "my_username",
                 "universal_newlines": True,
             }
 
@@ -161,6 +160,7 @@ When not specified, ``max_read_lines`` will default to 50 lines.
             max_read_lines = 12
 
             # ...
+
 
 Customizing process execution environment with ``env``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
