@@ -27,10 +27,43 @@ It's important to note that ``pattern`` is a regular expression and will be matc
             # ...
 
 
+Making sure your process is ready with ``startup_check``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some processes don't have that much console output, so ``pytest-xprocess`` offers an alternative way to check if the initialized process is in a query-ready state by allowing the user to define a callback function ``startup_check``.
+
+When provided, this function  will be called upon to check process responsiveness.
+
+``startup_check`` must return a boolean value (``True`` or ``False``)
+
+.. code-block:: python
+
+    @pytest.fixture
+    def myserver(xprocess):
+        class Starter(ProcessStarter):
+            # checks if our server is ready with a ping
+            def startup_check(self):
+                sock = socket.socket()
+                sock.connect(("myhostname", 6777))
+                sock.sendall(b"ping\n")
+                return sock.recv(1) == "pong!"
+            # ...
+
+
+A note on ``pattern`` vs ``startup_check`` for detecting process initialization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both ``pattern`` and ``startup_check`` are optional, users may chose to use what suites their needs the most. However, at least one of them must be specified since ``XProcess.ensure`` needs a way to detect process initialization. Bellow we have a simple breakdown of possible setups configurations:
+
+1. Only``pattern``. When only a ``pattern`` is provided, then, naturally, only ``pattern`` will be taken into account during process startup
+2. Only ``startup_check``. Analogous to above, when only ``startup_check`` is provided, only ``startup_check`` will be considered during process startup
+3. Both ``pattern`` and ``startup_check``. When both have been specified, both will be used together. In other words, both ``pattern`` needs to be matched and ``startup_check`` must succeed for the process to be considered query-ready.
+
+
 Controlling Startup Wait Time with ``timeout``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some processes naturally take longer to start than others. By default, ``pytest-xprocess`` will wait for a maxium of 120 seconds for a given process to start before raising a ``TimeoutError``. Changing this value may be useful, for example, when the user knows that a given process would never take longer than a known amount of time to start under normal circunstances, so if it does go over this known upper boundary, that means something is wrong and the waiting process must be interrupted. The maxium wait time can be controlled thourgh the class variable ``timeout``.
+Some processes naturally take longer to start than others. By default, ``pytest-xprocess`` will wait for a maxium of 120 seconds for a given process to start before raising a ``TimeoutError``. Changing this value may be useful, for example, when the user knows that a given process would never take longer than a known amount of time to start under normal circumstances, so if it does go over this known upper boundary, that means something is wrong and the waiting process must be interrupted. The maximum wait time can be controlled through the class variable ``timeout``.
 
 .. code-block:: python
 
@@ -128,31 +161,6 @@ When not specified, ``max_read_lines`` will default to 50 lines.
             max_read_lines = 12
 
             # ...
-
-Making sure your process is ready with ``startup_check``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Some processes don't have that much console output, so ``pytest-xprocess`` offers a way to double-check that the initialized process is in a query-ready state by allowing the user to define a  callback function ``startup_check``.
-
-When provided, this function  will be called upon to check process responsiveness after ``ProcessStarter.pattern`` has been matched.
-
-By default, ``XProcess.ensure`` will attempt to match ``ProcessStarter.pattern`` when starting a process, if matched, xprocess will consider the process as ready to answer queries. If ``startup_check`` is provided though, its return value will also be considered to determine if the process has been properly started. If ``startup_check`` returns True after ``ProcessStarter.pattern`` has been matched, ``XProcess.ensure`` will return sucessfully. In contrast, if ``startup_check`` does not return ``True`` before timing out, ``XProcess.ensure`` will raise a ``TimeoutError`` exception.
-
-``startup_check`` must return a boolean value (``True`` or ``False``)
-
-.. code-block:: python
-
-    @pytest.fixture
-    def myserver(xprocess):
-        class Starter(ProcessStarter):
-            # checks if our server is ready with a ping
-            def startup_check(self):
-                sock = socket.socket()
-                sock.connect(("myhostname", 6777))
-                sock.sendall(b"ping\n")
-                return sock.recv(1) == "pong!"
-            # ...
-
 
 Customizing process execution environment with ``env``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

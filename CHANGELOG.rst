@@ -1,3 +1,9 @@
+1.0.0 (unreleased)
+------------------
+
+- ProcessStarter.pattern is now optional. Users may provide either ProcessStarter.pattern or ProcessStarter.callback or both.
+
+
 0.23.0 (2023-09-23)
 -------------------
 
