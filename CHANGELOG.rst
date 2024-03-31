@@ -1,4 +1,10 @@
-1.0.0 (unreleased)
+1.0.1 (2024-04-31)
+------------------
+
+- Add missing test suite files to source distribution
+
+
+1.0.0 (2024-03-23)
 ------------------
 
 - `ProcessStarter.pattern` is now optional. Users may provide either `ProcessStarter.pattern` or `ProcessStarter.callback` or both.
