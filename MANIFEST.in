@@ -3,4 +3,4 @@ include README.rst
 include setup.py
 include tox.ini
 include LICENSE
-graft example
+graft tests

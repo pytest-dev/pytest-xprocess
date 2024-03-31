@@ -141,3 +141,5 @@ dmypy.json
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/pytest-xprocess.iml
 /.idea/vcs.xml
+
+*.DS_Store
