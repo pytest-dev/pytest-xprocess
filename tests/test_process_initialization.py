@@ -20,7 +20,7 @@ def request_response_cycle(tcp_port, data):
                 sock.sendall(bytes(data, "utf-8"))
                 received = str(sock.recv(1024), "utf-8")
                 return received == data.upper()
-        except socket.error as e:
+        except OSError as e:
             if attempt < 3:
                 time.sleep(1)
             else:
