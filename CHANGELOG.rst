@@ -1,3 +1,10 @@
+1.0.2 (2024-11-22)
+------------------
+
+- Add retry for request_response_cycle. Fixed
+  https://github.com/pytest-dev/pytest-xprocess/issues/154
+
+
 1.0.1 (2024-04-31)
 ------------------
 

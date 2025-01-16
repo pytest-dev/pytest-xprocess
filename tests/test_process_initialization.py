@@ -1,5 +1,6 @@
 import socket
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -12,11 +13,18 @@ server_path = Path(__file__).parent.joinpath("server.py").absolute()
 def request_response_cycle(tcp_port, data):
     """test started server instance by sending
     request and checking response"""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect(("localhost", tcp_port))
-        sock.sendall(bytes(data, "utf-8"))
-        received = str(sock.recv(1024), "utf-8")
-        return received == data.upper()
+    for attempt in range(4):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect(("localhost", tcp_port))
+                sock.sendall(bytes(data, "utf-8"))
+                received = str(sock.recv(1024), "utf-8")
+                return received == data.upper()
+        except OSError as e:
+            if attempt < 3:
+                time.sleep(1)
+            else:
+                raise e
 
 
 @pytest.mark.parametrize("proc_name", ["s1", "s2", "s3"])
