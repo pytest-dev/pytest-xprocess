@@ -422,7 +422,11 @@ class ProcessStarter(ABC):
         """Wait until the pattern is mached and callback returns successful."""
         raw_lines = self.get_lines(log_file)
         lines = map(self.log_line, self.filter_lines(raw_lines))
-        first_match = next(match for match in (re.search(self.pattern, line) for line in lines) if match)
+        first_match = next(
+            match
+            for match in (re.search(self.pattern, line) for line in lines)
+            if match
+        )
         self.pattern_match = first_match
         return first_match
 
