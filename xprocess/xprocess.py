@@ -358,6 +358,7 @@ class ProcessStarter(ABC):
     popen_kwargs = {}
     max_read_lines = 50
     terminate_on_interrupt = False
+    pattern_match = None
 
     def __init__(self, control_dir, process):
         self._max_time = None
@@ -421,8 +422,13 @@ class ProcessStarter(ABC):
         """Wait until the pattern is mached and callback returns successful."""
         raw_lines = self.get_lines(log_file)
         lines = map(self.log_line, self.filter_lines(raw_lines))
-        has_match = any(re.search(self.pattern, line) for line in lines)
-        return has_match
+        first_match = next(
+            match
+            for match in (re.search(self.pattern, line) for line in lines)
+            if match
+        )
+        self.pattern_match = first_match
+        return first_match
 
     def filter_lines(self, lines):
         """fetch first <max_read_lines>, ignoring blank lines."""
