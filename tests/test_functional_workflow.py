@@ -3,8 +3,7 @@ from pathlib import Path
 
 def test_functional_work_flow(testdir, tcp_port):
     server_path = Path(__file__).parent.joinpath("server.py").absolute()
-    testdir.makepyfile(
-        """
+    testdir.makepyfile("""
         import sys
         import socket
         from xprocess import ProcessStarter
@@ -29,9 +28,7 @@ def test_functional_work_flow(testdir, tcp_port):
                 sock.sendall(bytes(data, "utf-8"))
                 received = str(sock.recv(1024), "utf-8")
                 assert received == data.upper()
-    """
-        % (tcp_port, str(server_path))
-    )
+    """ % (tcp_port, str(server_path)))
     result = testdir.runpytest()
     result.stdout.fnmatch_lines("*1 passed*")
     result = testdir.runpytest("--xshow")
