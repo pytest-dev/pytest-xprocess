@@ -12,7 +12,7 @@ def get_log_files(root_dir):
         os.path.join(proc_dir, f)
         for proc_dir in proc_dirs
         for f in os.listdir(proc_dir)
-        if f.endswith("log")
+        if f.endswith("log") and os.path.isfile(os.path.join(proc_dir, f))
     ]
 
 
