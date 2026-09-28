@@ -14,7 +14,6 @@ from time import sleep
 
 import psutil
 
-
 XPROCESS_BLOCK_DELIMITER = "@@__xproc_block_delimiter__@@"
 
 
@@ -391,9 +390,7 @@ class ProcessStarter(ABC):
                 raise TimeoutError(
                     "The provided startup callback could not assert process\
                     responsiveness within the specified time interval of {} \
-                    seconds".format(
-                        self.timeout
-                    )
+                    seconds".format(self.timeout)
                 )
 
     def wait(self, log_file):
