@@ -1,3 +1,9 @@
+1.0.3 (unreleased)
+------------------
+
+- Provide top-level ``pytest_xprocess`` module compatibility shim for downstream imports (`#163 <https://github.com/pytest-dev/pytest-xprocess/issues/163>`_)
+
+
 1.0.1 (2024-04-31)
 ------------------
 
